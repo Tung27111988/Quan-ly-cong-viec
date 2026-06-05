@@ -790,22 +790,30 @@ function renderDashboard() {
     elements.statPendingTasks.textContent = `${workingTasks} / ${reviewingTasks}`;
     elements.statCompletedTasks.textContent = completedTasks;
     elements.statTotalTasks.textContent = totalTasks;
-    elements.urgentCountBadge.textContent = `${urgentTasks} công việc`;
 
-    // Urgent Tasks Panel
-    const urgentUnfinished = state.tasks.filter(t => t.isUrgent && t.status !== "completed");
-    const sortedUrgent = sortTasks(urgentUnfinished);
+    // Dashboard Tasks Panel
+    const isAdmin = state.currentRole === "admin";
+    let dashboardTasks = [];
+    if (isAdmin) {
+        dashboardTasks = state.tasks.filter(t => t.isUrgent && t.status !== "completed");
+        elements.urgentCountBadge.textContent = `${dashboardTasks.length} công việc gấp`;
+    } else {
+        dashboardTasks = state.tasks.filter(t => t.assigneeId === state.currentRole && t.status !== "completed");
+        elements.urgentCountBadge.textContent = `${dashboardTasks.length} việc của bạn`;
+    }
     
-    if (sortedUrgent.length === 0) {
+    const sortedDashTasks = sortTasks(dashboardTasks);
+    
+    if (sortedDashTasks.length === 0) {
         elements.dashboardUrgentTasksList.innerHTML = `
             <div class="empty-state">
                 <i class="fa-solid fa-circle-check text-success"></i>
-                <p>Tuyệt vời! Không có công việc gấp nào cần xử lý.</p>
+                <p>Tuyệt vời! Không có công việc nào cần xử lý.</p>
             </div>
         `;
     } else {
         let listHtml = "";
-        sortedUrgent.forEach(task => {
+        sortedDashTasks.forEach(task => {
             const project = state.projects.find(p => p.id === task.projectId);
             const member = state.members.find(m => m.id === task.assigneeId);
             
@@ -1153,7 +1161,11 @@ function renderTasks() {
         // Project filter
         const matchProj = projFilter === "all" || task.projectId === projFilter;
         // Member filter
-        const matchMem = memFilter === "all" || task.assigneeId === memFilter;
+        let matchMem = memFilter === "all" || task.assigneeId === memFilter;
+        const isAdmin = state.currentRole === "admin";
+        if (!isAdmin && state.currentRole !== "guest") {
+            matchMem = task.assigneeId === state.currentRole;
+        }
         // Status filter
         const matchStatus = statusFilter === "all" || task.status === statusFilter;
         // Urgent filter
@@ -1163,10 +1175,6 @@ function renderTasks() {
                             
         return matchSearch && matchProj && matchMem && matchStatus && matchUrgent;
     });
-
-    // Nếu người đăng nhập là Nhân viên, tự động làm nổi bật hoặc mặc định lọc công việc của nhân viên đó?
-    // Để giữ trải nghiệm tốt nhất: nếu là nhân viên, ta KHÔNG khóa filter nhưng hiển thị việc của họ một cách rõ ràng.
-    // Hoặc ta có thể cho họ xem hết để biết tiến độ dự án chung của NOVASTARS, nhưng họ chỉ có thể chỉnh sửa/nộp file công việc của họ.
     
     // Apply Sorting
     const sortedTasksList = sortTasks(filteredTasks);
@@ -1191,7 +1199,6 @@ function renderTasks() {
         // Tags representation
         let urgentBadge = task.isUrgent ? `<span class="badge badge-danger"><i class="fa-solid fa-triangle-exclamation"></i> Cần gấp</span>` : "";
         let statusBadge = "";
-        let statusClass = "";
         
         if (task.status === "new") {
             statusBadge = `<span class="badge badge-info"><i class="fa-solid fa-clock"></i> Mới giao</span>`;
@@ -1302,13 +1309,22 @@ function populateDropdowns() {
     let filterMemHtml = '<option value="all">Tất cả Thành viên</option>';
     let formMemHtml = '<option value="">-- Chọn thành viên --</option>';
     
+    let accountFullNameHtml = '<option value="">-- Chọn thành viên liên kết --</option>';
+    accountFullNameHtml += '<option value="Quản trị viên hệ thống">Quản trị viên hệ thống (Không có thẻ thành viên)</option>';
+    
     state.members.forEach(m => {
         formMemHtml += `<option value="${m.id}">${m.name} (${m.role})</option>`;
         filterMemHtml += `<option value="${m.id}">${m.name}</option>`;
+        accountFullNameHtml += `<option value="${m.name}">${m.name} (${m.role})</option>`;
     });
     
     elements.filterMember.innerHTML = filterMemHtml;
     elements.taskAssignee.innerHTML = formMemHtml;
+    
+    // Check if accountFullName element exists (since it's dynamically populated)
+    if (elements.accountFullName) {
+        elements.accountFullName.innerHTML = accountFullNameHtml;
+    }
 }
 
 // --- UTILITY DATE FORMAT ---
