@@ -90,13 +90,23 @@ const INITIAL_TASKS = [
     }
 ];
 
+// --- INITIAL SEED ACCOUNTS ---
+const INITIAL_ACCOUNTS = [
+    { id: "acc-1", username: "admin", password: "admin", fullName: "Quản trị viên hệ thống", role: "admin" },
+    { id: "acc-2", username: "tri.pm", password: "123", fullName: "Phan Minh Trí", role: "admin" },
+    { id: "acc-3", username: "ha.ltt", password: "123", fullName: "Lê Thị Thu Hà", role: "employee" },
+    { id: "acc-4", username: "nam.th", password: "123", fullName: "Trần Hoàng Nam", role: "employee" }
+];
+
 // --- APP STATE ---
 let state = {
     projects: [],
     members: [],
     tasks: [],
     tags: [],
-    currentRole: "admin", // "admin" hoặc "mem-X"
+    accounts: [],
+    currentUser: null,
+    currentRole: "admin", // "admin" hoặc "mem-X" (Tương thích ngược)
     themeMode: "auto",   // "light", "dark", "auto"
     activePanel: "dashboard",
     projectLayout: "grid", // "grid" | "table"
@@ -114,6 +124,7 @@ const elements = {
     currentUserName: document.getElementById("currentUserName"),
     currentUserRole: document.getElementById("currentUserRole"),
     currentUserAvatar: document.getElementById("currentUserAvatar"),
+    btnLogout: document.getElementById("btnLogout"),
     
     // Theme buttons
     themeAuto: document.getElementById("themeAuto"),
@@ -127,7 +138,8 @@ const elements = {
         members: document.getElementById("panel-members"),
         assignment: document.getElementById("panel-assignment"),
         tasks: document.getElementById("panel-tasks"),
-        tags: document.getElementById("panel-tags")
+        tags: document.getElementById("panel-tags"),
+        accounts: document.getElementById("panel-accounts")
     },
 
     // Backup Data Buttons
@@ -181,7 +193,8 @@ const elements = {
         task: document.getElementById("modalTask"),
         taskProgress: document.getElementById("modalTaskProgress"),
         tag: document.getElementById("modalTag"),
-        projectDetail: document.getElementById("modalProjectDetail")
+        projectDetail: document.getElementById("modalProjectDetail"),
+        account: document.getElementById("modalAccount")
     },
     
     // Project Form
@@ -251,6 +264,24 @@ const elements = {
     adminStatusSelect: document.getElementById("adminStatusSelect"),
     btnAdminSaveStatus: document.getElementById("btnAdminSaveStatus"),
 
+    // Login Overlay & Forms
+    loginOverlay: document.getElementById("loginOverlay"),
+    loginForm: document.getElementById("loginForm"),
+    loginUsername: document.getElementById("loginUsername"),
+    loginPassword: document.getElementById("loginPassword"),
+
+    // Account Panel & Form
+    accountSearch: document.getElementById("accountSearch"),
+    btnNewAccount: document.getElementById("btnNewAccount"),
+    accountList: document.getElementById("accountList"),
+    accountForm: document.getElementById("accountForm"),
+    accountId: document.getElementById("accountId"),
+    accountUsername: document.getElementById("accountUsername"),
+    accountPassword: document.getElementById("accountPassword"),
+    accountFullName: document.getElementById("accountFullName"),
+    accountRole: document.getElementById("accountRole"),
+    accountModalTitle: document.getElementById("accountModalTitle"),
+
     toastContainer: document.getElementById("toastContainer")
 };
 
@@ -261,10 +292,20 @@ function initApp() {
     state.members = JSON.parse(localStorage.getItem("novastars_members")) || INITIAL_MEMBERS;
     state.tasks = JSON.parse(localStorage.getItem("novastars_tasks")) || INITIAL_TASKS;
     state.tags = JSON.parse(localStorage.getItem("novastars_tags")) || INITIAL_TAGS;
+    state.accounts = JSON.parse(localStorage.getItem("novastars_accounts")) || INITIAL_ACCOUNTS;
+    state.currentUser = JSON.parse(localStorage.getItem("novastars_current_user")) || null;
     state.themeMode = localStorage.getItem("novastars_theme_mode") || "auto";
-    state.currentRole = localStorage.getItem("novastars_current_role") || "admin";
     state.projectLayout = localStorage.getItem("novastars_project_layout") || "grid";
     state.projectColumnsVisibility = JSON.parse(localStorage.getItem("novastars_project_cols_visibility")) || { dept: true, status: true, progress: true, tags: true };
+    
+    // Check login state
+    if (!state.currentUser) {
+        elements.loginOverlay.style.display = "flex";
+        state.currentRole = "guest";
+    } else {
+        elements.loginOverlay.style.display = "none";
+        syncUserRoleCompat();
+    }
     
     saveToLocalStorage();
 
@@ -281,7 +322,9 @@ function initApp() {
     setupEventHandlers();
     
     // 5. Initial Render
-    renderAll();
+    if (state.currentUser) {
+        renderAll();
+    }
     
     // 6. Setup Theme clock check (checks every minute)
     setInterval(() => {
@@ -291,11 +334,23 @@ function initApp() {
     }, 60000);
 }
 
+function syncUserRoleCompat() {
+    if (!state.currentUser) return;
+    if (state.currentUser.role === "admin") {
+        state.currentRole = "admin";
+    } else {
+        const member = state.members.find(m => m.name.toLowerCase() === state.currentUser.fullName.toLowerCase());
+        state.currentRole = member ? member.id : "guest";
+    }
+}
+
 function saveToLocalStorage() {
     localStorage.setItem("novastars_projects", JSON.stringify(state.projects));
     localStorage.setItem("novastars_members", JSON.stringify(state.members));
     localStorage.setItem("novastars_tasks", JSON.stringify(state.tasks));
     localStorage.setItem("novastars_tags", JSON.stringify(state.tags));
+    localStorage.setItem("novastars_accounts", JSON.stringify(state.accounts));
+    localStorage.setItem("novastars_current_user", JSON.stringify(state.currentUser));
     localStorage.setItem("novastars_theme_mode", state.themeMode);
     localStorage.setItem("novastars_current_role", state.currentRole);
     localStorage.setItem("novastars_project_layout", state.projectLayout);
@@ -364,32 +419,31 @@ function populateRoleSwitcher() {
 }
 
 function updateCurrentUserProfile() {
-    if (state.currentRole === "admin") {
-        elements.currentUserName.textContent = "Admin";
-        elements.currentUserRole.textContent = "Người giao việc";
-        elements.currentUserAvatar.textContent = "AD";
-        elements.currentUserAvatar.style.backgroundColor = "var(--color-primary)";
-        
-        // Hiển thị tất cả nút tạo việc/dự án/thành viên
-        document.querySelectorAll(".btn-admin-only").forEach(el => el.style.display = "inline-flex");
-    } else {
-        const member = state.members.find(m => m.id === state.currentRole);
-        if (member) {
-            elements.currentUserName.textContent = member.name;
-            elements.currentUserRole.textContent = member.role;
-            elements.currentUserAvatar.textContent = getInitials(member.name);
-            elements.currentUserAvatar.style.backgroundColor = member.color;
-        } else {
-            // Trường hợp thành viên đã bị xóa nhưng session vẫn còn lưu
-            state.currentRole = "admin";
-            elements.roleSwitcher.value = "admin";
-            saveToLocalStorage();
-            updateCurrentUserProfile();
-            return;
-        }
-        
-        // Ẩn tất cả nút tạo của Admin
-        document.querySelectorAll(".btn-admin-only").forEach(el => el.style.display = "none");
+    if (!state.currentUser) return;
+    
+    // Render logged in user details
+    elements.currentUserName.textContent = state.currentUser.fullName;
+    elements.currentUserRole.textContent = state.currentUser.role === "admin" ? "Quản trị viên" : "Nhân viên";
+    elements.currentUserAvatar.textContent = getInitials(state.currentUser.fullName);
+    
+    const member = state.members.find(m => m.name.toLowerCase() === state.currentUser.fullName.toLowerCase());
+    elements.currentUserAvatar.style.backgroundColor = member ? member.color : "var(--color-primary)";
+    
+    const isAdmin = state.currentUser.role === "admin";
+    
+    // Toggle admin-only buttons visibility
+    document.querySelectorAll(".btn-admin-only").forEach(el => {
+        el.style.display = isAdmin ? "inline-flex" : "none";
+    });
+    
+    // Toggle admin-only menu item in sidebar visibility
+    const menuAccounts = document.getElementById("menu-accounts");
+    if (menuAccounts) {
+        menuAccounts.style.display = isAdmin ? "inline-flex" : "none";
+    }
+    const menuTags = document.querySelector('.menu-item[data-target="tags"]');
+    if (menuTags) {
+        menuTags.style.display = isAdmin ? "inline-flex" : "none";
     }
     
     // Re-render views to reflect actions permissions
@@ -1220,6 +1274,20 @@ function setupEventHandlers() {
 
     // 14. Project detail task list filter
     elements.filterProjDetailTaskStatus.addEventListener("change", renderProjDetailTasks);
+
+    // 15. Login & Logout events
+    elements.loginForm.addEventListener("submit", handleLogin);
+    elements.btnLogout.addEventListener("click", handleLogout);
+
+    // 16. Account management events
+    elements.accountSearch.addEventListener("input", renderAccounts);
+    elements.btnNewAccount.addEventListener("click", () => {
+        elements.accountForm.reset();
+        elements.accountId.value = "";
+        elements.accountModalTitle.textContent = "Tạo Tài khoản Mới";
+        openModal("account");
+    });
+    elements.accountForm.addEventListener("submit", handleAccountSubmit);
 }
 
 // --- NAVIGATION SWITCH VIEWS ---
@@ -1244,6 +1312,7 @@ function switchView(panelId) {
     if (panelId === "assignment") titleStr = "Phân công & Giao việc";
     if (panelId === "tasks") titleStr = "Danh sách Công việc";
     if (panelId === "tags") titleStr = "Quản lý Thẻ";
+    if (panelId === "accounts") titleStr = "Quản lý Tài khoản";
     elements.pageTitle.textContent = titleStr;
     
     // Re-render target panel content
@@ -1253,6 +1322,7 @@ function switchView(panelId) {
     if (panelId === "assignment") renderAssignmentBoard();
     if (panelId === "tasks") renderTasks();
     if (panelId === "tags") renderTags();
+    if (panelId === "accounts") renderAccounts();
 }
 
 // --- MODAL UTILITIES ---
@@ -2258,6 +2328,193 @@ function renderTagSelectorInForm(container, selectedTagIds = []) {
     });
     container.innerHTML = html;
 }
+
+// --- ACCOUNT & LOGIN MANAGEMENT LOGIC ---
+
+function handleLogin(e) {
+    e.preventDefault();
+    const username = elements.loginUsername.value.trim().toLowerCase();
+    const password = elements.loginPassword.value;
+    
+    if (!username || !password) {
+        showToast("Vui lòng điền đầy đủ tên đăng nhập và mật khẩu.", "warning");
+        return;
+    }
+    
+    const account = state.accounts.find(acc => acc.username.toLowerCase() === username && acc.password === password);
+    if (!account) {
+        showToast("Tên đăng nhập hoặc mật khẩu không chính xác.", "danger");
+        return;
+    }
+    
+    state.currentUser = account;
+    elements.loginUsername.value = "";
+    elements.loginPassword.value = "";
+    elements.loginOverlay.style.display = "none";
+    
+    syncUserRoleCompat();
+    saveToLocalStorage();
+    updateCurrentUserProfile();
+    showToast(`Đăng nhập thành công! Chào mừng ${account.fullName}.`, "success");
+    renderAll();
+    switchView("dashboard");
+}
+
+function handleLogout() {
+    state.currentUser = null;
+    state.currentRole = "guest";
+    saveToLocalStorage();
+    
+    // Show login overlay
+    elements.loginOverlay.style.display = "flex";
+    
+    // Reset inputs
+    elements.loginUsername.value = "";
+    elements.loginPassword.value = "";
+    
+    showToast("Đã đăng xuất tài khoản thành công.", "info");
+}
+
+function renderAccounts() {
+    const searchVal = elements.accountSearch.value.toLowerCase().trim();
+    const filtered = state.accounts.filter(acc => {
+        return acc.username.toLowerCase().includes(searchVal) ||
+               acc.fullName.toLowerCase().includes(searchVal) ||
+               (acc.role === "admin" ? "quản trị viên" : "nhân viên").includes(searchVal);
+    });
+    
+    if (filtered.length === 0) {
+        elements.accountList.innerHTML = `
+            <div class="empty-state" style="grid-column: 1 / -1;">
+                <i class="fa-solid fa-user-slash text-muted"></i>
+                <p>Không tìm thấy tài khoản nào.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = "";
+    filtered.forEach(acc => {
+        const isSelf = state.currentUser && state.currentUser.id === acc.id;
+        const roleLabel = acc.role === "admin" ? "Quản trị viên" : "Nhân viên";
+        const roleBadgeClass = acc.role === "admin" ? "badge-danger" : "badge-info";
+        
+        const deleteBtn = isSelf ? `
+            <button class="btn btn-danger btn-sm" disabled title="Không thể xóa chính tài khoản đang đăng nhập" style="opacity:0.5; cursor:not-allowed;">
+                <i class="fa-solid fa-trash"></i> Xóa
+            </button>
+        ` : `
+            <button class="btn btn-danger btn-sm" onclick="deleteAccount('${acc.id}')">
+                <i class="fa-solid fa-trash"></i> Xóa
+            </button>
+        `;
+        
+        html += `
+            <div class="account-card">
+                <div class="account-card-header">
+                    <span class="account-card-name">${acc.fullName}</span>
+                    <span class="badge ${roleBadgeClass}">${roleLabel}</span>
+                </div>
+                <div class="account-card-body">
+                    <span><i class="fa-solid fa-user"></i> Tên đăng nhập: <strong>${acc.username}</strong></span>
+                    <span><i class="fa-solid fa-key"></i> Mật khẩu: <strong>${acc.password}</strong></span>
+                </div>
+                <div class="account-card-footer">
+                    <button class="btn btn-secondary btn-sm" onclick="editAccount('${acc.id}')">
+                        <i class="fa-solid fa-user-pen"></i> Sửa
+                    </button>
+                    ${deleteBtn}
+                </div>
+            </div>
+        `;
+    });
+    elements.accountList.innerHTML = html;
+}
+
+function handleAccountSubmit(e) {
+    e.preventDefault();
+    const id = elements.accountId.value;
+    const username = elements.accountUsername.value.trim().toLowerCase();
+    const password = elements.accountPassword.value;
+    const fullName = elements.accountFullName.value.trim();
+    const role = elements.accountRole.value;
+    
+    if (!username || !password || !fullName || !role) {
+        showToast("Vui lòng nhập đầy đủ thông tin tài khoản.", "warning");
+        return;
+    }
+    
+    // Check duplication of username
+    const isDuplicate = state.accounts.some(acc => acc.id !== id && acc.username.toLowerCase() === username);
+    if (isDuplicate) {
+        showToast("Tên đăng nhập đã tồn tại trong hệ thống.", "warning");
+        return;
+    }
+    
+    if (id) {
+        // Edit mode
+        const index = state.accounts.findIndex(acc => acc.id === id);
+        if (index !== -1) {
+            state.accounts[index] = { ...state.accounts[index], username, password, fullName, role };
+            
+            // Sync current user state if editing self
+            if (state.currentUser && state.currentUser.id === id) {
+                state.currentUser = state.accounts[index];
+                syncUserRoleCompat();
+                updateCurrentUserProfile();
+            }
+            showToast(`Đã cập nhật tài khoản: ${fullName}`, "success");
+        }
+    } else {
+        // Create mode
+        const newAcc = {
+            id: `acc-${Date.now()}`,
+            username,
+            password,
+            fullName,
+            role
+        };
+        state.accounts.push(newAcc);
+        showToast(`Đã tạo tài khoản mới cho: ${fullName}`, "success");
+    }
+    
+    saveToLocalStorage();
+    closeAllModals();
+    renderAccounts();
+}
+
+window.editAccount = function(id) {
+    const acc = state.accounts.find(a => a.id === id);
+    if (!acc) return;
+    
+    elements.accountId.value = acc.id;
+    elements.accountUsername.value = acc.username;
+    elements.accountPassword.value = acc.password;
+    elements.accountFullName.value = acc.fullName;
+    elements.accountRole.value = acc.role;
+    
+    elements.accountModalTitle.textContent = "Chỉnh sửa Tài khoản";
+    openModal("account");
+};
+
+window.deleteAccount = function(id) {
+    const acc = state.accounts.find(a => a.id === id);
+    if (!acc) return;
+    
+    if (state.currentUser && state.currentUser.id === id) {
+        showToast("Bạn không thể xóa chính tài khoản đang đăng nhập.", "danger");
+        return;
+    }
+    
+    if (!confirm(`Bạn có chắc chắn muốn xóa tài khoản "${acc.fullName}" (Username: ${acc.username})?`)) {
+        return;
+    }
+    
+    state.accounts = state.accounts.filter(a => a.id !== id);
+    saveToLocalStorage();
+    showToast(`Đã xóa tài khoản "${acc.fullName}" thành công.`, "success");
+    renderAccounts();
+};
 
 // --- START SYSTEM ---
 document.addEventListener("DOMContentLoaded", initApp);

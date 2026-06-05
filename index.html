@@ -52,6 +52,10 @@
                     <i class="fa-solid fa-tags"></i>
                     <span>Quản lý Thẻ</span>
                 </a>
+                <a href="#" class="menu-item btn-admin-only" data-target="accounts" id="menu-accounts">
+                    <i class="fa-solid fa-user-gear"></i>
+                    <span>Quản lý Tài khoản</span>
+                </a>
             </nav>
 
             <div class="sidebar-footer">
@@ -93,22 +97,24 @@
                         </button>
                     </div>
 
-                    <!-- Role Switcher -->
-                    <div class="role-switcher-container">
+                    <!-- Role Switcher (Ẩn hoàn toàn vì dùng hệ thống tài khoản thực) -->
+                    <div class="role-switcher-container" style="display: none !important;">
                         <label for="roleSwitcher" class="role-label"><i class="fa-solid fa-user-shield"></i> Vai trò:</label>
                         <select id="roleSwitcher" class="role-select">
                             <option value="admin">Quản trị viên (Admin)</option>
-                            <!-- Các nhân viên khác sẽ được thêm động vào đây từ JS -->
                         </select>
                     </div>
 
                     <!-- User Profile Quick View -->
-                    <div class="user-profile-badge">
+                    <div class="user-profile-badge" style="gap:12px;">
                         <div class="avatar" id="currentUserAvatar">AD</div>
                         <div class="user-info">
                             <span class="user-name" id="currentUserName">Admin</span>
-                            <span class="user-role" id="currentUserRole">Người giao việc</span>
+                            <span class="user-role" id="currentUserRole">Quản trị viên</span>
                         </div>
+                        <button id="btnLogout" class="btn-icon-only" title="Đăng xuất" style="margin-left: 4px; border-color: rgba(239, 68, 68, 0.3); color: var(--color-danger);">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </button>
                     </div>
                 </div>
             </header>
@@ -372,6 +378,23 @@
 
                     <div class="tag-grid" id="tagList" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:20px;">
                         <!-- Các thẻ hiển thị động ở đây -->
+                    </div>
+                </section>
+
+                <!-- 7. ACCOUNTS MANAGEMENT VIEW -->
+                <section class="content-panel" id="panel-accounts">
+                    <div class="action-bar">
+                        <div class="search-bar">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="accountSearch" placeholder="Tìm kiếm tài khoản...">
+                        </div>
+                        <button class="btn btn-primary btn-admin-only" id="btnNewAccount">
+                            <i class="fa-solid fa-user-plus"></i> Tạo tài khoản mới
+                        </button>
+                    </div>
+
+                    <div class="account-grid" id="accountList" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap:20px;">
+                        <!-- Các tài khoản hiển thị động ở đây -->
                     </div>
                 </section>
             </main>
@@ -733,6 +756,64 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- 7. MODAL: TẠO/SỬA TÀI KHOẢN (Admin) -->
+    <div class="modal" id="modalAccount">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="accountModalTitle">Tạo Tài khoản Mới</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="accountForm">
+                <input type="hidden" id="accountId">
+                <div class="form-group">
+                    <label for="accountUsername" class="required-label">Tên đăng nhập</label>
+                    <input type="text" id="accountUsername" required placeholder="Ví dụ: tri.pm">
+                </div>
+                <div class="form-group">
+                    <label for="accountPassword" class="required-label">Mật khẩu</label>
+                    <input type="password" id="accountPassword" required placeholder="Nhập mật khẩu">
+                </div>
+                <div class="form-group">
+                    <label for="accountFullName" class="required-label">Họ và tên đầy đủ</label>
+                    <input type="text" id="accountFullName" required placeholder="Ví dụ: Phan Minh Trí">
+                </div>
+                <div class="form-group">
+                    <label for="accountRole" class="required-label">Phân quyền</label>
+                    <select id="accountRole" required>
+                        <option value="employee">Nhân viên (Chỉ xem việc & nộp bài)</option>
+                        <option value="admin">Quản trị viên (Đầy đủ quyền)</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary modal-close">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Lưu tài khoản</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- LOGIN SCREEN OVERLAY -->
+    <div class="login-overlay" id="loginOverlay" style="display: none;">
+        <div class="login-card">
+            <div class="login-header">
+                <i class="fa-solid fa-star-and-crescent login-icon"></i>
+                <h2>NOVASTARS</h2>
+                <span>Hệ thống Quản lý Công việc</span>
+            </div>
+            <form id="loginForm" style="padding: 0;">
+                <div class="form-group">
+                    <label for="loginUsername">Tên đăng nhập</label>
+                    <input type="text" id="loginUsername" required placeholder="Nhập tên đăng nhập">
+                </div>
+                <div class="form-group" style="margin-bottom: 24px;">
+                    <label for="loginPassword">Mật khẩu</label>
+                    <input type="password" id="loginPassword" required placeholder="Nhập mật khẩu">
+                </div>
+                <button type="submit" class="btn btn-primary btn-login">Đăng nhập</button>
+            </form>
         </div>
     </div>
 
