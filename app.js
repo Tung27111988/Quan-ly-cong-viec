@@ -287,28 +287,80 @@ const elements = {
 
 // --- CORE FUNCTIONS: LOCAL STORAGE & DATA LOADING ---
 function initApp() {
-    // 1. Load data from LocalStorage or seed if not present
-    state.projects = JSON.parse(localStorage.getItem("novastars_projects")) || INITIAL_PROJECTS;
-    state.members = JSON.parse(localStorage.getItem("novastars_members")) || INITIAL_MEMBERS;
-    state.tasks = JSON.parse(localStorage.getItem("novastars_tasks")) || INITIAL_TASKS;
-    state.tags = JSON.parse(localStorage.getItem("novastars_tags")) || INITIAL_TAGS;
-    state.accounts = JSON.parse(localStorage.getItem("novastars_accounts")) || INITIAL_ACCOUNTS;
+    // 1. Load data from LocalStorage or seed if not present with robust try-catch
+    try {
+        state.projects = JSON.parse(localStorage.getItem("novastars_projects"));
+        if (!Array.isArray(state.projects)) state.projects = INITIAL_PROJECTS;
+    } catch (e) {
+        state.projects = INITIAL_PROJECTS;
+    }
+
+    try {
+        state.members = JSON.parse(localStorage.getItem("novastars_members"));
+        if (!Array.isArray(state.members)) state.members = INITIAL_MEMBERS;
+    } catch (e) {
+        state.members = INITIAL_MEMBERS;
+    }
+
+    try {
+        state.tasks = JSON.parse(localStorage.getItem("novastars_tasks"));
+        if (!Array.isArray(state.tasks)) state.tasks = INITIAL_TASKS;
+    } catch (e) {
+        state.tasks = INITIAL_TASKS;
+    }
+
+    try {
+        state.tags = JSON.parse(localStorage.getItem("novastars_tags"));
+        if (!Array.isArray(state.tags)) state.tags = INITIAL_TAGS;
+    } catch (e) {
+        state.tags = INITIAL_TAGS;
+    }
+
+    try {
+        state.accounts = JSON.parse(localStorage.getItem("novastars_accounts"));
+        if (!Array.isArray(state.accounts)) state.accounts = INITIAL_ACCOUNTS;
+    } catch (e) {
+        state.accounts = INITIAL_ACCOUNTS;
+    }
     
     // Force reset admin's default password to '123456' to ensure it is always accessible
-    const adminAcc = state.accounts.find(acc => acc.username.toLowerCase() === "admin");
+    const adminAcc = state.accounts.find(acc => acc && acc.username && acc.username.toLowerCase() === "admin");
     if (adminAcc) {
         adminAcc.password = "123456";
     } else {
         state.accounts.push({ id: "acc-1", username: "admin", password: "123456", fullName: "Quản trị viên hệ thống", role: "admin" });
     }
     
-    state.currentUser = JSON.parse(localStorage.getItem("novastars_current_user")) || null;
-    if (state.currentUser && state.currentUser.username.toLowerCase() === "admin") {
-        state.currentUser.password = "123456";
+    try {
+        const storedUser = localStorage.getItem("novastars_current_user");
+        if (storedUser && storedUser !== "undefined") {
+            const parsed = JSON.parse(storedUser);
+            if (parsed && typeof parsed === "object" && parsed.username && parsed.role) {
+                state.currentUser = parsed;
+                if (state.currentUser.username.toLowerCase() === "admin") {
+                    state.currentUser.password = "123456";
+                }
+            } else {
+                state.currentUser = null;
+            }
+        } else {
+            state.currentUser = null;
+        }
+    } catch (e) {
+        state.currentUser = null;
     }
+
     state.themeMode = localStorage.getItem("novastars_theme_mode") || "auto";
     state.projectLayout = localStorage.getItem("novastars_project_layout") || "grid";
-    state.projectColumnsVisibility = JSON.parse(localStorage.getItem("novastars_project_cols_visibility")) || { dept: true, status: true, progress: true, tags: true };
+    
+    try {
+        state.projectColumnsVisibility = JSON.parse(localStorage.getItem("novastars_project_cols_visibility"));
+        if (!state.projectColumnsVisibility || typeof state.projectColumnsVisibility !== "object") {
+            state.projectColumnsVisibility = { dept: true, status: true, progress: true, tags: true };
+        }
+    } catch (e) {
+        state.projectColumnsVisibility = { dept: true, status: true, progress: true, tags: true };
+    }
     
     // Check login state
     if (!state.currentUser) {
