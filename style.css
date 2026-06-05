@@ -892,6 +892,186 @@ body {
     margin-top: 14px;
 }
 
+/* --- VIEW TOGGLE BUTTONS --- */
+.view-toggle-wrapper {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background-color: var(--bg-card);
+}
+
+.view-toggle-btn {
+    border: none;
+    background: none;
+    padding: 8px 14px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.view-toggle-btn.active {
+    background-color: var(--color-primary);
+    color: white;
+}
+
+.view-toggle-btn:hover:not(.active) {
+    background-color: var(--bg-hover);
+    color: var(--text-main);
+}
+
+/* --- VIEWOPTION DROPDOWN --- */
+.dropdown-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-menu-custom {
+    position: absolute;
+    top: 110%;
+    right: 0;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    padding: 12px;
+    min-width: 170px;
+    display: none; /* Controlled by JS via .active class */
+    flex-direction: column;
+    gap: 8px;
+    z-index: 100;
+}
+
+.dropdown-menu-custom.active {
+    display: flex;
+}
+
+.dropdown-item-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 12.5px;
+    color: var(--text-main);
+    font-weight: 500;
+}
+
+.dropdown-item-checkbox input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+}
+
+/* --- PROJECT TABLE DESIGN & VIEWOPTION STYLING --- */
+.project-table th, 
+.project-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-color);
+    text-align: left;
+    vertical-align: middle;
+}
+
+.project-table tbody tr {
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+}
+
+.project-table tbody tr:hover {
+    background-color: var(--bg-hover);
+}
+
+/* Class to hide columns dynamically */
+.col-hidden {
+    display: none !important;
+}
+
+/* --- TAGS SYSTEM STYLING --- */
+.tag-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: var(--radius-full);
+}
+
+.tag-selector-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.tag-selector-item input[type="checkbox"] {
+    width: 13px;
+    height: 13px;
+    cursor: pointer;
+}
+
+/* Tag Management Cards */
+.tag-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.tag-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--border-color-hover);
+    box-shadow: var(--shadow-md);
+}
+
+.tag-card-left {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.tag-usage {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.tag-card-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Project filters bar specific styles */
+.project-filters-bar {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+    box-shadow: var(--card-shadow);
+}
+
 /* --- MEMBERS VIEW DESIGN --- */
 .member-grid {
     display: grid;
@@ -1887,7 +2067,8 @@ input[type="color"] {
     }
 
     /* Task filters adapt */
-    .task-filters-bar {
+    .task-filters-bar,
+    .project-filters-bar {
         flex-direction: column;
         align-items: stretch;
         gap: 12px;

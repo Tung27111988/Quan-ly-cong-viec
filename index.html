@@ -48,6 +48,10 @@
                     <i class="fa-solid fa-list-check"></i>
                     <span>Công việc</span>
                 </a>
+                <a href="#" class="menu-item" data-target="tags">
+                    <i class="fa-solid fa-tags"></i>
+                    <span>Quản lý Thẻ</span>
+                </a>
             </nav>
 
             <div class="sidebar-footer">
@@ -190,18 +194,79 @@
 
                 <!-- 2. PROJECTS VIEW -->
                 <section class="content-panel" id="panel-projects">
-                    <div class="action-bar">
-                        <div class="search-bar">
-                            <i class="fa-solid fa-magnifying-glass"></i>
-                            <input type="text" id="projectSearch" placeholder="Tìm kiếm dự án...">
+                    <div class="task-filters-bar">
+                        <div class="filter-group-row">
+                            <div class="search-bar">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input type="text" id="projectSearch" placeholder="Tìm kiếm dự án...">
+                            </div>
+                            <div class="filter-select-wrapper">
+                                <select id="filterProjectDept" class="filter-select">
+                                    <option value="all">Tất cả Phòng ban</option>
+                                    <option value="Đào tạo">Phòng Đào tạo</option>
+                                    <option value="Công nghệ">Phòng Công nghệ</option>
+                                    <option value="Nội dung">Phòng Nội dung</option>
+                                    <option value="Giám đốc">Ban Giám đốc</option>
+                                </select>
+                            </div>
+                            
+                            <!-- View toggler & Viewoption -->
+                            <div class="view-toggle-wrapper">
+                                <button class="view-toggle-btn active" id="viewProjGrid" title="Xem dạng lưới thẻ">
+                                    <i class="fa-solid fa-table-cells-large"></i> Thẻ
+                                </button>
+                                <button class="view-toggle-btn" id="viewProjTable" title="Xem dạng bảng">
+                                    <i class="fa-solid fa-table-list"></i> Bảng
+                                </button>
+                            </div>
+                            
+                            <div class="dropdown-wrapper" id="viewOptionsDropdownWrapper" style="display: none;">
+                                <button class="btn btn-secondary btn-sm" id="btnViewOptions">
+                                    <i class="fa-solid fa-sliders"></i> Cột hiển thị <i class="fa-solid fa-chevron-down" style="font-size:10px; margin-left:2px;"></i>
+                                </button>
+                                <div class="dropdown-menu-custom" id="viewOptionsDropdownMenu">
+                                    <label class="dropdown-item-checkbox">
+                                        <input type="checkbox" id="colShowDept" checked> <span>Phòng ban</span>
+                                    </label>
+                                    <label class="dropdown-item-checkbox">
+                                        <input type="checkbox" id="colShowStatus" checked> <span>Trạng thái</span>
+                                    </label>
+                                    <label class="dropdown-item-checkbox">
+                                        <input type="checkbox" id="colShowProgress" checked> <span>Tiến độ</span>
+                                    </label>
+                                    <label class="dropdown-item-checkbox">
+                                        <input type="checkbox" id="colShowTags" checked> <span>Thẻ dự án</span>
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                         <button class="btn btn-primary btn-admin-only" id="btnNewProject">
                             <i class="fa-solid fa-plus"></i> Tạo dự án mới
                         </button>
                     </div>
 
+                    <!-- Grid Layout Container (Default) -->
                     <div class="project-grid" id="projectList">
                         <!-- Thẻ dự án hiển thị động ở đây -->
+                    </div>
+
+                    <!-- Table Layout Container (Hidden by default) -->
+                    <div class="project-table-container" id="projectTableContainer" style="display: none; width:100%; overflow-x:auto; background-color:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-lg); box-shadow:var(--card-shadow);">
+                        <table class="project-table" id="projectTable" style="width:100%; border-collapse:collapse; text-align:left; font-size:13px;">
+                            <thead>
+                                <tr style="border-bottom:1px solid var(--border-color); background-color:var(--bg-hover);">
+                                    <th style="padding:14px 16px; font-weight:700;">Tên dự án</th>
+                                    <th class="col-dept" style="padding:14px 16px; font-weight:700;">Phòng ban</th>
+                                    <th class="col-status" style="padding:14px 16px; font-weight:700;">Trạng thái</th>
+                                    <th class="col-progress" style="padding:14px 16px; font-weight:700;">Tiến độ</th>
+                                    <th class="col-tags" style="padding:14px 16px; font-weight:700;">Thẻ dự án</th>
+                                    <th style="padding:14px 16px; font-weight:700; text-align:right;">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="projectTableBody">
+                                <!-- Trình bày dạng bảng động -->
+                            </tbody>
+                        </table>
                     </div>
                 </section>
 
@@ -292,6 +357,23 @@
                         <!-- Danh sách công việc động -->
                     </div>
                 </section>
+
+                <!-- 6. TAGS MANAGEMENT VIEW -->
+                <section class="content-panel" id="panel-tags">
+                    <div class="action-bar">
+                        <div class="search-bar">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="tagSearch" placeholder="Tìm kiếm thẻ...">
+                        </div>
+                        <button class="btn btn-primary btn-admin-only" id="btnNewTag">
+                            <i class="fa-solid fa-plus"></i> Tạo thẻ mới
+                        </button>
+                    </div>
+
+                    <div class="tag-grid" id="tagList" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:20px;">
+                        <!-- Các thẻ hiển thị động ở đây -->
+                    </div>
+                </section>
             </main>
         </div>
     </div>
@@ -311,17 +393,37 @@
                     <label for="projectName" class="required-label">Tên dự án</label>
                     <input type="text" id="projectName" required placeholder="Ví dụ: Thiết kế Giáo trình Lập trình Scratch">
                 </div>
+                
+                <div class="form-row">
+                    <div class="form-group col-6">
+                        <label for="projectDept" class="required-label">Phòng ban</label>
+                        <select id="projectDept" required>
+                            <option value="Đào tạo">Phòng Đào tạo</option>
+                            <option value="Công nghệ">Phòng Công nghệ</option>
+                            <option value="Nội dung">Phòng Nội dung</option>
+                            <option value="Giám đốc">Ban Giám đốc</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-6">
+                        <label for="projectStatus">Trạng thái</label>
+                        <select id="projectStatus">
+                            <option value="active">Đang triển khai</option>
+                            <option value="completed">Đã hoàn thành</option>
+                            <option value="on-hold">Tạm dừng</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Gắn thẻ dự án</label>
+                    <div class="tag-selector-list" id="projectTagSelector" style="display:flex; flex-wrap:wrap; gap:8px; padding:10px; background-color:var(--bg-input); border:1px solid var(--border-color); border-radius:var(--radius-md); max-height:120px; overflow-y:auto;">
+                        <!-- Danh sách thẻ load động từ JS -->
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <label for="projectDesc">Mô tả dự án</label>
                     <textarea id="projectDesc" rows="3" placeholder="Mô tả mục tiêu, yêu cầu của dự án..."></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="projectStatus">Trạng thái</label>
-                    <select id="projectStatus">
-                        <option value="active">Đang triển khai</option>
-                        <option value="completed">Đã hoàn thành</option>
-                        <option value="on-hold">Tạm dừng</option>
-                    </select>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary modal-close">Hủy</button>
@@ -414,6 +516,13 @@
                                 Cần gấp / Việc quan trọng
                             </label>
                         </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Gắn thẻ công việc</label>
+                    <div class="tag-selector-list" id="taskTagSelector" style="display:flex; flex-wrap:wrap; gap:8px; padding:10px; background-color:var(--bg-input); border:1px solid var(--border-color); border-radius:var(--radius-md); max-height:120px; overflow-y:auto;">
+                        <!-- Danh sách thẻ load động từ JS -->
                     </div>
                 </div>
 
@@ -562,6 +671,70 @@
 
     <!-- Notification Toast -->
     <div class="toast-container" id="toastContainer"></div>
+
+    <!-- 5. MODAL: TẠO/SỬA THẺ (Admin) -->
+    <div class="modal" id="modalTag">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="tagModalTitle">Tạo Thẻ Mới</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="tagForm">
+                <input type="hidden" id="tagId">
+                <div class="form-group">
+                    <label for="tagName" class="required-label">Tên thẻ</label>
+                    <input type="text" id="tagName" required placeholder="Ví dụ: Scratch, Lập trình, Báo cáo">
+                </div>
+                <div class="form-group">
+                    <label for="tagColor">Màu sắc thẻ</label>
+                    <input type="color" id="tagColor" value="#4f46e5">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary modal-close">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Lưu thẻ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 6. MODAL: CHI TIẾT DỰ ÁN & LỌC VIỆC -->
+    <div class="modal" id="modalProjectDetail">
+        <div class="modal-content" style="max-width: 720px;">
+            <div class="modal-header">
+                <h3 id="detailProjName">Chi tiết Dự án</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body-detail">
+                <div class="proj-detail-meta mb-3" style="display:flex; flex-direction:column; gap:8px;">
+                    <p id="detailProjDept" style="font-size:12.5px; margin:0;"><i class="fa-solid fa-building" style="color:var(--color-primary); width:16px;"></i> Phòng ban: <span style="font-weight:600;">...</span></p>
+                    <p id="detailProjStatus" style="font-size:12.5px; margin:0;"><i class="fa-solid fa-circle-info" style="color:var(--color-primary); width:16px;"></i> Trạng thái: <span style="font-weight:600;">...</span></p>
+                    <div id="detailProjTags" class="flex-align-center gap-2 mt-2" style="display:flex; flex-wrap:wrap; gap:6px;">
+                        <!-- Danh sách tags dự án -->
+                    </div>
+                </div>
+                <div class="detail-desc-box mb-3" id="detailProjDesc">Mô tả dự án...</div>
+
+                <hr class="modal-divider">
+
+                <div class="project-tasks-section">
+                    <div class="action-bar mb-3" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                        <h4 style="font-size:14px; font-weight:700; margin:0; color:var(--text-main);"><i class="fa-solid fa-list-check" style="margin-right:6px; color:var(--color-primary);"></i>Công việc thuộc dự án</h4>
+                        <div class="filter-select-wrapper">
+                            <select id="filterProjDetailTaskStatus" class="filter-select" style="min-width: 180px; padding:6px 12px; font-size:12px;">
+                                <option value="all">Tất cả công việc</option>
+                                <option value="working">Công việc đang làm</option>
+                                <option value="completed">Công việc đã hoàn thành</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="project-detail-task-list" id="detailProjTaskList" style="display:flex; flex-direction:column; gap:10px; max-height:280px; overflow-y:auto; padding-right:4px;">
+                        <!-- Danh sách công việc thuộc dự án -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Custom JS -->
     <script src="app.js"></script>

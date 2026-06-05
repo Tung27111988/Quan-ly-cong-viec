@@ -3,10 +3,17 @@
    ========================================================================== */
 
 // --- INITIAL SEED DATA ---
+const INITIAL_TAGS = [
+    { id: "tag-1", name: "Gấp rút", color: "#ef4444" },
+    { id: "tag-2", name: "Quan trọng", color: "#f59e0b" },
+    { id: "tag-3", name: "Lên kế hoạch", color: "#3b82f6" },
+    { id: "tag-4", name: "Đang soạn thảo", color: "#10b981" }
+];
+
 const INITIAL_PROJECTS = [
-    { id: "proj-1", name: "Xây dựng Giáo án Scratch Tiểu học", desc: "Soạn thảo tài liệu giảng dạy, bài tập lập trình Scratch cho học sinh lớp 3, 4, 5 theo chuẩn STEAM.", status: "active" },
-    { id: "proj-2", name: "Phát triển App học từ vựng Tiếng Anh", desc: "Ứng dụng di động giúp học sinh NOVASTARS ghi nhớ từ vựng qua phương pháp lặp khoảng cách.", status: "active" },
-    { id: "proj-3", name: "Tập huấn Giáo viên hè 2026", desc: "Chương trình đào tạo kỹ năng sư phạm và công nghệ dạy học mới cho toàn bộ giáo viên hệ thống.", status: "completed" }
+    { id: "proj-1", name: "Xây dựng Giáo án Scratch Tiểu học", desc: "Soạn thảo tài liệu giảng dạy, bài tập lập trình Scratch cho học sinh lớp 3, 4, 5 theo chuẩn STEAM.", status: "active", department: "Đào tạo", tagIds: ["tag-4"] },
+    { id: "proj-2", name: "Phát triển App học từ vựng Tiếng Anh", desc: "Ứng dụng di động giúp học sinh NOVASTARS ghi nhớ từ vựng qua phương pháp lặp khoảng cách.", status: "active", department: "Công nghệ", tagIds: ["tag-3"] },
+    { id: "proj-3", name: "Tập huấn Giáo viên hè 2026", desc: "Chương trình đào tạo kỹ năng sư phạm và công nghệ dạy học mới cho toàn bộ giáo viên hệ thống.", status: "completed", department: "Đào tạo", tagIds: ["tag-2"] }
 ];
 
 const INITIAL_MEMBERS = [
@@ -25,7 +32,8 @@ const INITIAL_TASKS = [
         isUrgent: true, 
         status: "working", 
         desc: "Yêu cầu: Nội dung tập trung vào các câu lệnh di chuyển cơ bản và vẽ hình. Thiết kế hình ảnh minh họa sinh động, phù hợp lứa tuổi tiểu học.",
-        completedFile: null
+        completedFile: null,
+        tagIds: ["tag-1", "tag-4"]
     },
     { 
         id: "task-2", 
@@ -36,7 +44,8 @@ const INITIAL_TASKS = [
         isUrgent: true, 
         status: "new", 
         desc: "Thiết kế slide giới thiệu tổng quan về xu hướng giáo dục STEAM toàn cầu và cách ứng dụng vào hệ thống giáo án NOVASTARS.",
-        completedFile: null
+        completedFile: null,
+        tagIds: ["tag-1", "tag-2"]
     },
     { 
         id: "task-3", 
@@ -47,7 +56,8 @@ const INITIAL_TASKS = [
         isUrgent: false, 
         status: "new", 
         desc: "Nghiên cứu và viết thuật toán SuperMemo-2 phục vụ việc tính toán khoảng cách ôn tập từ vựng cho học sinh.",
-        completedFile: null
+        completedFile: null,
+        tagIds: ["tag-3"]
     },
     { 
         id: "task-4", 
@@ -62,8 +72,9 @@ const INITIAL_TASKS = [
             name: "Bao_cao_kiem_thu_Scratch_khoi_3.txt",
             size: "12.5 KB",
             type: "text/plain",
-            content: "data:text/plain;base64,QkFPIENBTyBLSUVNIFRIVSBHSUFPIFRSSU5IIFNDUkFUQ0ggS0hPSSAzDQotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KMS4gVGjhu7FjIG5naGnhu4dtIGzhu5twIDNBMjogMTAwJSBo4buNYyBzaW5oIGhvw6BuIHRow6BuaCBiYWkgdOG6rXAgdsG6vSBoxrDhu5tuZyBk4bqrbi4NCjIuIEzhu5dpIGNow61uaCB04bqjOiBCw6BpIDIgKGTDsm5nIDUpLCBCw6BpIDQgKGTDsm5nIDEyKSAtPiDEkMOjIHPhu61hLg0KMy4gxJDDoW5oIGdpw6E6IEdpw6FvIHRyw6xuaCBwaMO5IGjhu6NwLCBk4buFIGhp4buDdS4="
-        }
+            content: "data:text/plain;base64,QkFPIENBTyBLSUVNIFRIVSBHSUFPIFRSSU5IIFNDUkFUQ0ggS0hPSSAzDQotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KMS4gVGjhu7FjIG5naGnhu4dtIGzhu5twIDNBMjogMTAwJSBo4buNYyBzaW5oIGhvw6BuIHRow6BuaCBiYWkgdOG6rXAgdsG6vSBoxrDhu5tuZyBk4bqrbi4NCjIuIEzhu5dpIGNow61uaCB04bqjOiBCw6BpIDIgKGTDsm5nIDUpLCBCw6BpIDQgKGTDsm5nIDEyKSAtPiDEkMOjIHPhu61hLg0KMy4gxJDDoW5oIGdpw6E6IEdpw6FvIHRyw6xuaCBwaMO5IGjhu6NwLCBk4buFEiBoaeG7g3Uu"
+        },
+        tagIds: ["tag-2"]
     },
     { 
         id: "task-5", 
@@ -74,7 +85,8 @@ const INITIAL_TASKS = [
         isUrgent: false, 
         status: "completed", 
         desc: "Đã tạo link Zoom, thiết lập mật khẩu phòng họp, gửi thư mời kèm tài liệu PDF cho toàn bộ 50 giáo viên đăng ký.",
-        completedFile: null
+        completedFile: null,
+        tagIds: []
     }
 ];
 
@@ -83,9 +95,12 @@ let state = {
     projects: [],
     members: [],
     tasks: [],
+    tags: [],
     currentRole: "admin", // "admin" hoặc "mem-X"
     themeMode: "auto",   // "light", "dark", "auto"
-    activePanel: "dashboard"
+    activePanel: "dashboard",
+    projectLayout: "grid", // "grid" | "table"
+    projectColumnsVisibility: { dept: true, status: true, progress: true, tags: true }
 };
 
 // --- DOM ELEMENTS ---
@@ -111,7 +126,8 @@ const elements = {
         projects: document.getElementById("panel-projects"),
         members: document.getElementById("panel-members"),
         assignment: document.getElementById("panel-assignment"),
-        tasks: document.getElementById("panel-tasks")
+        tasks: document.getElementById("panel-tasks"),
+        tags: document.getElementById("panel-tags")
     },
 
     // Backup Data Buttons
@@ -132,6 +148,12 @@ const elements = {
     projectSearch: document.getElementById("projectSearch"),
     btnNewProject: document.getElementById("btnNewProject"),
     projectList: document.getElementById("projectList"),
+    filterProjectDept: document.getElementById("filterProjectDept"),
+    viewProjGrid: document.getElementById("viewProjGrid"),
+    viewProjTable: document.getElementById("viewProjTable"),
+    viewOptionsDropdownWrapper: document.getElementById("viewOptionsDropdownWrapper"),
+    projectTableContainer: document.getElementById("projectTableContainer"),
+    projectTableBody: document.getElementById("projectTableBody"),
     
     // Members Panel
     memberSearch: document.getElementById("memberSearch"),
@@ -157,7 +179,9 @@ const elements = {
         project: document.getElementById("modalProject"),
         member: document.getElementById("modalMember"),
         task: document.getElementById("modalTask"),
-        taskProgress: document.getElementById("modalTaskProgress")
+        taskProgress: document.getElementById("modalTaskProgress"),
+        tag: document.getElementById("modalTag"),
+        projectDetail: document.getElementById("modalProjectDetail")
     },
     
     // Project Form
@@ -167,6 +191,8 @@ const elements = {
     projectDesc: document.getElementById("projectDesc"),
     projectStatus: document.getElementById("projectStatus"),
     projectModalTitle: document.getElementById("projectModalTitle"),
+    projectDept: document.getElementById("projectDept"),
+    projectTagSelector: document.getElementById("projectTagSelector"),
     
     // Member Form
     memberForm: document.getElementById("memberForm"),
@@ -188,6 +214,7 @@ const elements = {
     taskIsUrgent: document.getElementById("taskIsUrgent"),
     taskDesc: document.getElementById("taskDesc"),
     taskModalTitle: document.getElementById("taskModalTitle"),
+    taskTagSelector: document.getElementById("taskTagSelector"),
 
     // Task Detail & Progress Modal
     detailUrgentBadge: document.getElementById("detailUrgentBadge"),
@@ -233,8 +260,11 @@ function initApp() {
     state.projects = JSON.parse(localStorage.getItem("novastars_projects")) || INITIAL_PROJECTS;
     state.members = JSON.parse(localStorage.getItem("novastars_members")) || INITIAL_MEMBERS;
     state.tasks = JSON.parse(localStorage.getItem("novastars_tasks")) || INITIAL_TASKS;
+    state.tags = JSON.parse(localStorage.getItem("novastars_tags")) || INITIAL_TAGS;
     state.themeMode = localStorage.getItem("novastars_theme_mode") || "auto";
     state.currentRole = localStorage.getItem("novastars_current_role") || "admin";
+    state.projectLayout = localStorage.getItem("novastars_project_layout") || "grid";
+    state.projectColumnsVisibility = JSON.parse(localStorage.getItem("novastars_project_cols_visibility")) || { dept: true, status: true, progress: true, tags: true };
     
     saveToLocalStorage();
 
@@ -265,8 +295,11 @@ function saveToLocalStorage() {
     localStorage.setItem("novastars_projects", JSON.stringify(state.projects));
     localStorage.setItem("novastars_members", JSON.stringify(state.members));
     localStorage.setItem("novastars_tasks", JSON.stringify(state.tasks));
+    localStorage.setItem("novastars_tags", JSON.stringify(state.tags));
     localStorage.setItem("novastars_theme_mode", state.themeMode);
     localStorage.setItem("novastars_current_role", state.currentRole);
+    localStorage.setItem("novastars_project_layout", state.projectLayout);
+    localStorage.setItem("novastars_project_cols_visibility", JSON.stringify(state.projectColumnsVisibility));
 }
 
 // --- CORE FUNCTIONS: TOAST NOTIFICATIONS ---
@@ -410,6 +443,7 @@ function renderAll() {
     renderMembers();
     renderAssignmentBoard();
     renderTasks();
+    renderTags();
     populateDropdowns();
 }
 
@@ -508,61 +542,193 @@ function renderDashboard() {
 // 2. Render Projects View
 function renderProjects() {
     const searchVal = elements.projectSearch.value.toLowerCase().trim();
-    const filteredProjects = state.projects.filter(p => p.name.toLowerCase().includes(searchVal) || p.desc.toLowerCase().includes(searchVal));
+    const deptVal = elements.filterProjectDept.value;
     
-    if (filteredProjects.length === 0) {
-        elements.projectList.innerHTML = `
-            <div class="empty-state" style="grid-column: 1 / -1;">
-                <i class="fa-solid fa-folder-open text-muted"></i>
-                <p>Không tìm thấy dự án nào.</p>
-            </div>
-        `;
-        return;
-    }
-
+    const filteredProjects = state.projects.filter(p => {
+        const matchSearch = p.name.toLowerCase().includes(searchVal) || p.desc.toLowerCase().includes(searchVal);
+        const matchDept = deptVal === "all" || p.department === deptVal;
+        return matchSearch && matchDept;
+    });
+    
     const isAdmin = state.currentRole === "admin";
-    let cardsHtml = "";
-    filteredProjects.forEach(proj => {
-        const projTasks = state.tasks.filter(t => t.projectId === proj.id);
-        const total = projTasks.length;
-        const completed = projTasks.filter(t => t.status === "completed").length;
-        const activeTasks = total - completed;
+    
+    // Toggle active classes on view buttons & show/hide wrapper
+    const isGrid = state.projectLayout === "grid";
+    elements.viewProjGrid.classList.toggle("active", isGrid);
+    elements.viewProjTable.classList.toggle("active", !isGrid);
+    elements.viewOptionsDropdownWrapper.style.display = isGrid ? "none" : "inline-block";
+    
+    if (isGrid) {
+        elements.projectList.style.display = "grid";
+        elements.projectTableContainer.style.display = "none";
         
-        let statusBadge = "";
-        if (proj.status === "active") statusBadge = '<span class="badge badge-success">Đang làm</span>';
-        if (proj.status === "completed") statusBadge = '<span class="badge badge-info">Hoàn thành</span>';
-        if (proj.status === "on-hold") statusBadge = '<span class="badge badge-warning">Tạm dừng</span>';
-
-        let adminActions = "";
-        if (isAdmin) {
-            adminActions = `
-                <div class="project-card-footer">
-                    <button class="btn-icon-only btn-edit" onclick="editProject('${proj.id}', event)" title="Sửa dự án">
-                        <i class="fa-solid fa-pen"></i>
-                    </button>
-                    <button class="btn-icon-only btn-delete" onclick="deleteProject('${proj.id}', event)" title="Xóa dự án">
-                        <i class="fa-solid fa-trash"></i>
-                    </button>
+        if (filteredProjects.length === 0) {
+            elements.projectList.innerHTML = `
+                <div class="empty-state" style="grid-column: 1 / -1;">
+                    <i class="fa-solid fa-folder-open text-muted"></i>
+                    <p>Không tìm thấy dự án nào.</p>
                 </div>
             `;
+            return;
         }
+        
+        let cardsHtml = "";
+        filteredProjects.forEach(proj => {
+            const projTasks = state.tasks.filter(t => t.projectId === proj.id);
+            const total = projTasks.length;
+            const completed = projTasks.filter(t => t.status === "completed").length;
+            const activeTasks = total - completed;
+            
+            let statusBadge = "";
+            if (proj.status === "active") statusBadge = '<span class="badge badge-success">Đang làm</span>';
+            if (proj.status === "completed") statusBadge = '<span class="badge badge-info">Hoàn thành</span>';
+            if (proj.status === "on-hold") statusBadge = '<span class="badge badge-warning">Tạm dừng</span>';
 
-        cardsHtml += `
-            <div class="project-card">
-                <div class="project-card-header">
-                    <span class="project-card-title">${proj.name}</span>
-                    ${statusBadge}
+            let adminActions = "";
+            if (isAdmin) {
+                adminActions = `
+                    <div class="project-card-footer" onclick="event.stopPropagation()">
+                        <button class="btn-icon-only btn-edit" onclick="editProject('${proj.id}', event)" title="Sửa dự án">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                        <button class="btn-icon-only btn-delete" onclick="deleteProject('${proj.id}', event)" title="Xóa dự án">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            }
+            
+            let tagsHtml = "";
+            if (proj.tagIds && proj.tagIds.length > 0) {
+                proj.tagIds.forEach(tid => {
+                    const tag = state.tags.find(t => t.id === tid);
+                    if (tag) {
+                        tagsHtml += `
+                            <span class="tag-pill" style="background-color: ${tag.color}15; color: ${tag.color}; border: 1px solid ${tag.color}30; margin-right: 4px; display:inline-flex;">
+                                <i class="fa-solid fa-tag" style="font-size: 8px;"></i> ${tag.name}
+                            </span>
+                        `;
+                    }
+                });
+            }
+            const tagsWrapper = tagsHtml ? `<div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:12px;">${tagsHtml}</div>` : "";
+
+            cardsHtml += `
+                <div class="project-card" onclick="openProjectDetail('${proj.id}')" style="cursor:pointer;">
+                    <div class="project-card-header">
+                        <span class="project-card-title">${proj.name}</span>
+                        ${statusBadge}
+                    </div>
+                    <span style="font-size:11px; color:var(--text-muted); font-weight:600; margin-bottom:8px; display:block;"><i class="fa-solid fa-building"></i> ${proj.department || "Chưa rõ"}</span>
+                    <p class="project-card-desc">${proj.desc || "Không có mô tả chi tiết cho dự án này."}</p>
+                    ${tagsWrapper}
+                    <div class="project-card-stats">
+                        <span><i class="fa-solid fa-list-check"></i> Tổng: <strong>${total} việc</strong></span>
+                        <span><i class="fa-solid fa-hourglass-half"></i> Chưa xong: <strong>${activeTasks}</strong></span>
+                    </div>
+                    ${adminActions}
                 </div>
-                <p class="project-card-desc">${proj.desc || "Không có mô tả chi tiết cho dự án này."}</p>
-                <div class="project-card-stats">
-                    <span><i class="fa-solid fa-list-check"></i> Tổng: <strong>${total} việc</strong></span>
-                    <span><i class="fa-solid fa-hourglass-half"></i> Chưa xong: <strong>${activeTasks}</strong></span>
-                </div>
-                ${adminActions}
-            </div>
-        `;
+            `;
+        });
+        elements.projectList.innerHTML = cardsHtml;
+    } else {
+        elements.projectList.style.display = "none";
+        elements.projectTableContainer.style.display = "block";
+        
+        if (filteredProjects.length === 0) {
+            elements.projectTableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" style="text-align:center; padding: 30px;" class="text-muted">
+                        <i class="fa-solid fa-folder-open" style="font-size: 24px; display:block; margin-bottom:8px;"></i>
+                        Không tìm thấy dự án nào.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        let rowHtml = "";
+        filteredProjects.forEach(proj => {
+            const projTasks = state.tasks.filter(t => t.projectId === proj.id);
+            const total = projTasks.length;
+            const completed = projTasks.filter(t => t.status === "completed").length;
+            const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+            
+            let statusBadge = "";
+            if (proj.status === "active") statusBadge = '<span class="badge badge-success">Đang làm</span>';
+            if (proj.status === "completed") statusBadge = '<span class="badge badge-info">Hoàn thành</span>';
+            if (proj.status === "on-hold") statusBadge = '<span class="badge badge-warning">Tạm dừng</span>';
+            
+            let tagsHtml = "";
+            if (proj.tagIds && proj.tagIds.length > 0) {
+                proj.tagIds.forEach(tid => {
+                    const tag = state.tags.find(t => t.id === tid);
+                    if (tag) {
+                        tagsHtml += `
+                            <span class="tag-pill" style="background-color: ${tag.color}15; color: ${tag.color}; border: 1px solid ${tag.color}30; margin-right: 4px; display:inline-flex; align-items:center;">
+                                <i class="fa-solid fa-tag" style="font-size:8px;"></i> ${tag.name}
+                            </span>
+                        `;
+                    }
+                });
+            }
+            
+            let adminActions = "";
+            if (isAdmin) {
+                adminActions = `
+                    <button class="btn-icon-only btn-edit" onclick="editProject('${proj.id}', event)" title="Sửa dự án" style="display:inline-flex; margin-right:4px;">
+                        <i class="fa-solid fa-pen"></i>
+                    </button>
+                    <button class="btn-icon-only btn-delete" onclick="deleteProject('${proj.id}', event)" title="Xóa dự án" style="display:inline-flex;">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                `;
+            }
+            
+            rowHtml += `
+                <tr onclick="openProjectDetail('${proj.id}')" style="cursor:pointer;">
+                    <td style="padding:14px 16px; font-weight:600; color:var(--text-main);">${proj.name}</td>
+                    <td class="col-dept" style="padding:14px 16px; color:var(--text-muted);">${proj.department || "Không rõ"}</td>
+                    <td class="col-status" style="padding:14px 16px;">${statusBadge}</td>
+                    <td class="col-progress" style="padding:14px 16px;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <div class="progress-track" style="width: 80px; margin-bottom: 0;">
+                                <div class="progress-fill" style="width: ${percent}%;"></div>
+                            </div>
+                            <span style="font-size:11.5px; font-weight:600; color:var(--text-muted);">${percent}% (${completed}/${total})</span>
+                        </div>
+                    </td>
+                    <td class="col-tags" style="padding:14px 16px;">${tagsHtml || '<span class="text-muted" style="font-size:11px;">Không có</span>'}</td>
+                    <td style="padding:14px 16px; text-align:right;" onclick="event.stopPropagation()">${adminActions}</td>
+                </tr>
+            `;
+        });
+        elements.projectTableBody.innerHTML = rowHtml;
+        applyTableColumnVisibility();
+    }
+}
+
+function applyTableColumnVisibility() {
+    const vis = state.projectColumnsVisibility;
+    const colMap = {
+        dept: ".col-dept",
+        status: ".col-status",
+        progress: ".col-progress",
+        tags: ".col-tags"
+    };
+    
+    Object.keys(colMap).forEach(key => {
+        const selector = colMap[key];
+        const elementsToToggle = document.querySelectorAll(selector);
+        const isVisible = vis[key];
+        elementsToToggle.forEach(el => {
+            if (isVisible) {
+                el.classList.remove("col-hidden");
+            } else {
+                el.classList.add("col-hidden");
+            }
+        });
     });
-    elements.projectList.innerHTML = cardsHtml;
 }
 
 // 3. Render Members View
@@ -712,6 +878,20 @@ function renderTasks() {
         
         let hasFileBadge = task.completedFile ? `<span class="badge badge-info" title="Có tệp đính kèm hoàn thành"><i class="fa-solid fa-paperclip"></i> Đã nộp file</span>` : "";
 
+        let taskTagsHtml = "";
+        if (task.tagIds && task.tagIds.length > 0) {
+            task.tagIds.forEach(tid => {
+                const tag = state.tags.find(t => t.id === tid);
+                if (tag) {
+                    taskTagsHtml += `
+                        <span class="tag-pill" style="background-color: ${tag.color}15; color: ${tag.color}; border: 1px solid ${tag.color}30; display:inline-flex; align-items:center;">
+                            <i class="fa-solid fa-tag" style="font-size: 8px;"></i> ${tag.name}
+                        </span>
+                    `;
+                }
+            });
+        }
+
         // Admin actions
         let adminActionBtn = "";
         if (isAdmin) {
@@ -738,6 +918,7 @@ function renderTasks() {
                         ${urgentBadge}
                         ${statusBadge}
                         ${hasFileBadge}
+                        ${taskTagsHtml}
                         <span class="tag-project">${project ? project.name : "Dự án N/A"}</span>
                     </div>
                     <div class="task-title-area">
@@ -901,12 +1082,57 @@ function setupEventHandlers() {
         });
     });
 
-    // 6. Project search and form submit
+    // 6. Project search, filters, layouts and form submit
     elements.projectSearch.addEventListener("input", renderProjects);
+    elements.filterProjectDept.addEventListener("change", renderProjects);
+    
+    elements.viewProjGrid.addEventListener("click", () => {
+        state.projectLayout = "grid";
+        saveToLocalStorage();
+        renderProjects();
+    });
+    elements.viewProjTable.addEventListener("click", () => {
+        state.projectLayout = "table";
+        saveToLocalStorage();
+        renderProjects();
+    });
+
+    // Viewoptions Column Visibility Dropdown
+    const btnViewOptions = document.getElementById("btnViewOptions");
+    const viewOptionsDropdownMenu = document.getElementById("viewOptionsDropdownMenu");
+    if (btnViewOptions && viewOptionsDropdownMenu) {
+        btnViewOptions.addEventListener("click", (e) => {
+            e.stopPropagation();
+            viewOptionsDropdownMenu.classList.toggle("active");
+        });
+        document.addEventListener("click", (e) => {
+            if (viewOptionsDropdownMenu.classList.contains("active") && !viewOptionsDropdownMenu.contains(e.target) && e.target !== btnViewOptions) {
+                viewOptionsDropdownMenu.classList.remove("active");
+            }
+        });
+
+        // Initialize checkboxes value and listeners
+        const cols = ["dept", "status", "progress", "tags"];
+        cols.forEach(col => {
+            const id = "colShow" + col.charAt(0).toUpperCase() + col.slice(1);
+            const cb = document.getElementById(id);
+            if (cb) {
+                cb.checked = state.projectColumnsVisibility[col];
+                cb.addEventListener("change", (e) => {
+                    state.projectColumnsVisibility[col] = e.target.checked;
+                    saveToLocalStorage();
+                    applyTableColumnVisibility();
+                });
+            }
+        });
+    }
+
     elements.btnNewProject.addEventListener("click", () => {
         elements.projectForm.reset();
         elements.projectId.value = "";
         elements.projectModalTitle.textContent = "Tạo Dự án Mới";
+        elements.projectDept.value = "Đào tạo";
+        renderTagSelectorInForm(elements.projectTagSelector, []);
         openModal("project");
     });
     elements.projectForm.addEventListener("submit", handleProjectSubmit);
@@ -936,6 +1162,7 @@ function setupEventHandlers() {
         const defaultDate = new Date();
         defaultDate.setDate(defaultDate.getDate() + 3);
         elements.taskDueDate.value = defaultDate.toISOString().split("T")[0];
+        renderTagSelectorInForm(elements.taskTagSelector, []);
         openModal("task");
     });
     elements.taskForm.addEventListener("submit", handleTaskSubmit);
@@ -949,6 +1176,7 @@ function setupEventHandlers() {
         const defaultDate = new Date();
         defaultDate.setDate(defaultDate.getDate() + 3);
         elements.taskDueDate.value = defaultDate.toISOString().split("T")[0];
+        renderTagSelectorInForm(elements.taskTagSelector, []);
         openModal("task");
     });
 
@@ -979,6 +1207,19 @@ function setupEventHandlers() {
         elements.importFile.click();
     });
     elements.importFile.addEventListener("change", importDataFromJSON);
+
+    // 13. Tag management events
+    elements.tagSearch.addEventListener("input", renderTags);
+    elements.btnNewTag.addEventListener("click", () => {
+        elements.tagForm.reset();
+        elements.tagId.value = "";
+        elements.tagModalTitle.textContent = "Tạo Thẻ Mới";
+        openModal("tag");
+    });
+    elements.tagForm.addEventListener("submit", handleTagSubmit);
+
+    // 14. Project detail task list filter
+    elements.filterProjDetailTaskStatus.addEventListener("change", renderProjDetailTasks);
 }
 
 // --- NAVIGATION SWITCH VIEWS ---
@@ -1002,6 +1243,7 @@ function switchView(panelId) {
     if (panelId === "members") titleStr = "Thành viên Công ty";
     if (panelId === "assignment") titleStr = "Phân công & Giao việc";
     if (panelId === "tasks") titleStr = "Danh sách Công việc";
+    if (panelId === "tags") titleStr = "Quản lý Thẻ";
     elements.pageTitle.textContent = titleStr;
     
     // Re-render target panel content
@@ -1010,6 +1252,7 @@ function switchView(panelId) {
     if (panelId === "members") renderMembers();
     if (panelId === "assignment") renderAssignmentBoard();
     if (panelId === "tasks") renderTasks();
+    if (panelId === "tags") renderTags();
 }
 
 // --- MODAL UTILITIES ---
@@ -1034,12 +1277,14 @@ function handleProjectSubmit(e) {
     const name = elements.projectName.value.trim();
     const desc = elements.projectDesc.value.trim();
     const status = elements.projectStatus.value;
+    const department = elements.projectDept.value;
+    const tagIds = Array.from(elements.projectTagSelector.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
     
     if (id) {
         // Edit mode
         const index = state.projects.findIndex(p => p.id === id);
         if (index !== -1) {
-            state.projects[index] = { ...state.projects[index], name, desc, status };
+            state.projects[index] = { ...state.projects[index], name, desc, status, department, tagIds };
             showToast(`Đã cập nhật dự án: ${name}`, "success");
         }
     } else {
@@ -1048,7 +1293,9 @@ function handleProjectSubmit(e) {
             id: `proj-${Date.now()}`,
             name,
             desc,
-            status
+            status,
+            department,
+            tagIds
         };
         state.projects.push(newProj);
         showToast(`Đã tạo dự án mới: ${name}`, "success");
@@ -1070,6 +1317,9 @@ window.editProject = function(id, event) {
     elements.projectName.value = proj.name;
     elements.projectDesc.value = proj.desc;
     elements.projectStatus.value = proj.status;
+    elements.projectDept.value = proj.department || "Đào tạo";
+    
+    renderTagSelectorInForm(elements.projectTagSelector, proj.tagIds || []);
     
     elements.projectModalTitle.textContent = "Chỉnh sửa Dự án";
     openModal("project");
@@ -1199,6 +1449,7 @@ function handleTaskSubmit(e) {
     const dueDate = elements.taskDueDate.value;
     const isUrgent = elements.taskIsUrgent.checked;
     const desc = elements.taskDesc.value.trim();
+    const tagIds = Array.from(elements.taskTagSelector.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
     
     if (id) {
         // Edit mode
@@ -1211,7 +1462,8 @@ function handleTaskSubmit(e) {
                 assigneeId, 
                 dueDate, 
                 isUrgent, 
-                desc 
+                desc,
+                tagIds
             };
             showToast(`Đã cập nhật công việc: ${title}`, "success");
         }
@@ -1226,7 +1478,8 @@ function handleTaskSubmit(e) {
             isUrgent,
             status: "new",
             desc,
-            completedFile: null
+            completedFile: null,
+            tagIds
         };
         state.tasks.push(newTask);
         
@@ -1238,6 +1491,7 @@ function handleTaskSubmit(e) {
     closeAllModals();
     renderTasks();
     renderDashboard();
+    renderAssignmentBoard();
 }
 
 window.editTask = function(id) {
@@ -1251,6 +1505,8 @@ window.editTask = function(id) {
     elements.taskDueDate.value = task.dueDate;
     elements.taskIsUrgent.checked = task.isUrgent;
     elements.taskDesc.value = task.desc;
+    
+    renderTagSelectorInForm(elements.taskTagSelector, task.tagIds || []);
     
     elements.taskModalTitle.textContent = "Chỉnh sửa Công việc";
     openModal("task");
@@ -1738,6 +1994,262 @@ window.quickAssignToMember = function(memberId, event) {
     
     openModal("task");
 };
+
+// --- NEW UPGRADE FUNCTIONS: TAGS & VIEWOPTIONS & DETAILS ---
+
+function getTagUsageCount(tagId) {
+    const projCount = state.projects.filter(p => p.tagIds && p.tagIds.includes(tagId)).length;
+    const taskCount = state.tasks.filter(t => t.tagIds && t.tagIds.includes(tagId)).length;
+    return projCount + taskCount;
+}
+
+function renderTags() {
+    const searchVal = elements.tagSearch.value.toLowerCase().trim();
+    const filteredTags = state.tags.filter(t => t.name.toLowerCase().includes(searchVal));
+    const tagList = elements.tagList;
+    
+    if (filteredTags.length === 0) {
+        tagList.innerHTML = `
+            <div class="empty-state" style="grid-column: 1 / -1;">
+                <i class="fa-solid fa-tags text-muted"></i>
+                <p>Không tìm thấy thẻ nào.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const isAdmin = state.currentRole === "admin";
+    let html = "";
+    filteredTags.forEach(tag => {
+        const usage = getTagUsageCount(tag.id);
+        let adminActions = "";
+        if (isAdmin) {
+            adminActions = `
+                <div class="tag-card-right">
+                    <button class="btn-icon-only btn-edit" onclick="editTag('${tag.id}')" title="Sửa thẻ">
+                        <i class="fa-solid fa-pen"></i>
+                    </button>
+                    <button class="btn-icon-only btn-delete" onclick="deleteTag('${tag.id}')" title="Xóa thẻ">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            `;
+        }
+        
+        html += `
+            <div class="tag-card" style="border-left: 4px solid ${tag.color};">
+                <div class="tag-card-left">
+                    <span class="tag-pill" style="background-color: ${tag.color}15; color: ${tag.color}; border: 1px solid ${tag.color}30; width: fit-content; font-size:12px; padding:4px 10px; font-weight:600; border-radius:var(--radius-full);">
+                        <i class="fa-solid fa-tag"></i> ${tag.name}
+                    </span>
+                    <span class="tag-usage">Đang dùng cho: <strong>${usage} dự án/công việc</strong></span>
+                </div>
+                ${adminActions}
+            </div>
+        `;
+    });
+    tagList.innerHTML = html;
+}
+
+function handleTagSubmit(e) {
+    e.preventDefault();
+    const id = document.getElementById("tagId").value;
+    const name = document.getElementById("tagName").value.trim();
+    const color = document.getElementById("tagColor").value;
+    
+    if (id) {
+        // Edit tag
+        const idx = state.tags.findIndex(t => t.id === id);
+        if (idx !== -1) {
+            state.tags[idx] = { ...state.tags[idx], name, color };
+            showToast(`Đã cập nhật thẻ: ${name}`, "success");
+        }
+    } else {
+        // Create tag
+        const newTag = {
+            id: `tag-${Date.now()}`,
+            name,
+            color
+        };
+        state.tags.push(newTag);
+        showToast(`Đã tạo thẻ mới: ${name}`, "success");
+    }
+    
+    saveToLocalStorage();
+    closeAllModals();
+    renderTags();
+    renderProjects();
+    renderTasks();
+    renderDashboard();
+}
+
+window.editTag = function(id) {
+    const tag = state.tags.find(t => t.id === id);
+    if (!tag) return;
+    
+    document.getElementById("tagId").value = tag.id;
+    document.getElementById("tagName").value = tag.name;
+    document.getElementById("tagColor").value = tag.color;
+    document.getElementById("tagModalTitle").textContent = "Chỉnh sửa Thẻ";
+    openModal("tag");
+};
+
+window.deleteTag = function(id) {
+    const tag = state.tags.find(t => t.id === id);
+    if (!tag) return;
+    if (!confirm(`Bạn có chắc chắn muốn xóa thẻ "${tag.name}"? Thẻ này sẽ được gỡ khỏi tất cả dự án và công việc.`)) {
+        return;
+    }
+    
+    state.tags = state.tags.filter(t => t.id !== id);
+    
+    // Remove tag from projects
+    state.projects.forEach(p => {
+        if (p.tagIds) {
+            p.tagIds = p.tagIds.filter(tid => tid !== id);
+        }
+    });
+    
+    // Remove tag from tasks
+    state.tasks.forEach(t => {
+        if (t.tagIds) {
+            t.tagIds = t.tagIds.filter(tid => tid !== id);
+        }
+    });
+    
+    saveToLocalStorage();
+    showToast(`Đã xóa thẻ "${tag.name}" thành công.`, "success");
+    renderTags();
+    renderProjects();
+    renderTasks();
+    renderDashboard();
+};
+
+window.openProjectDetail = function(projId) {
+    const proj = state.projects.find(p => p.id === projId);
+    if (!proj) return;
+    
+    currentViewingProjectId = projId;
+    
+    document.getElementById("detailProjName").textContent = proj.name;
+    document.getElementById("detailProjDept").querySelector("span").textContent = proj.department || "Không rõ";
+    
+    let statusText = "Đang triển khai";
+    let statusClass = "badge-success";
+    if (proj.status === "completed") {
+        statusText = "Đã hoàn thành";
+        statusClass = "badge-info";
+    } else if (proj.status === "on-hold") {
+        statusText = "Tạm dừng";
+        statusClass = "badge-warning";
+    }
+    document.getElementById("detailProjStatus").querySelector("span").innerHTML = `<span class="badge ${statusClass}">${statusText}</span>`;
+    document.getElementById("detailProjDesc").textContent = proj.desc || "Không có mô tả chi tiết cho dự án này.";
+    
+    // Render tags list
+    const tagsContainer = document.getElementById("detailProjTags");
+    tagsContainer.innerHTML = "";
+    if (proj.tagIds && proj.tagIds.length > 0) {
+        proj.tagIds.forEach(tid => {
+            const tag = state.tags.find(t => t.id === tid);
+            if (tag) {
+                tagsContainer.innerHTML += `
+                    <span class="tag-pill" style="background-color: ${tag.color}15; color: ${tag.color}; border: 1px solid ${tag.color}30; padding:3px 8px; font-size:11px;">
+                        <i class="fa-solid fa-tag" style="font-size:8px;"></i> ${tag.name}
+                    </span>
+                `;
+            }
+        });
+    } else {
+        tagsContainer.innerHTML = '<span class="text-muted" style="font-size:11px;">Không có thẻ</span>';
+    }
+    
+    // Reset status filter dropdown to "all"
+    document.getElementById("filterProjDetailTaskStatus").value = "all";
+    
+    renderProjDetailTasks();
+    openModal("projectDetail");
+};
+
+let currentViewingProjectId = null;
+
+function renderProjDetailTasks() {
+    if (!currentViewingProjectId) return;
+    const statusFilter = document.getElementById("filterProjDetailTaskStatus").value;
+    
+    // Fetch tasks in project
+    let tasks = state.tasks.filter(t => t.projectId === currentViewingProjectId);
+    
+    // Filter tasks
+    if (statusFilter === "working") {
+        tasks = tasks.filter(t => t.status !== "completed");
+    } else if (statusFilter === "completed") {
+        tasks = tasks.filter(t => t.status === "completed");
+    }
+    
+    // Sort tasks
+    const sorted = sortTasks(tasks);
+    const listContainer = document.getElementById("detailProjTaskList");
+    
+    if (sorted.length === 0) {
+        listContainer.innerHTML = `
+            <div class="empty-state" style="padding: 20px 10px;">
+                <p style="font-size:12px; color:var(--text-muted);">Không có công việc nào trong dự án này.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = "";
+    sorted.forEach(task => {
+        const member = state.members.find(m => m.id === task.assigneeId);
+        
+        let statusBadge = "";
+        if (task.status === "new") statusBadge = '<span class="badge badge-info">Mới</span>';
+        if (task.status === "working") statusBadge = '<span class="badge badge-warning">Đang làm</span>';
+        if (task.status === "reviewing") statusBadge = '<span class="badge badge-danger">Chờ duyệt</span>';
+        if (task.status === "completed") statusBadge = '<span class="badge badge-success">Xong</span>';
+        
+        const isOverdue = task.status !== "completed" && new Date(task.dueDate) < new Date().setHours(0,0,0,0);
+        
+        html += `
+            <div class="urgent-item-card" onclick="closeAllModals(); setTimeout(() => openTaskProgressModal('${task.id}'), 150);" style="padding:10px 12px; border-radius:var(--radius-md); background-color:var(--bg-hover); margin-bottom:0; cursor:pointer;">
+                <div class="urgent-item-left">
+                    <span style="font-weight:600; font-size:13px; color:var(--text-main);">${task.title}</span>
+                    <div class="urgent-item-meta" style="margin-top:4px;">
+                        <span><i class="fa-solid fa-user" style="font-size:10px;"></i> ${member ? member.name : "Chưa phân công"}</span>
+                        <span class="${isOverdue ? 'text-danger' : ''}"><i class="fa-regular fa-calendar-days" style="font-size:10px;"></i> Hạn: ${formatDate(task.dueDate)}</span>
+                    </div>
+                </div>
+                <div class="urgent-item-right" style="gap:8px;">
+                    ${statusBadge}
+                    <i class="fa-solid fa-chevron-right text-muted" style="font-size:11px;"></i>
+                </div>
+            </div>
+        `;
+    });
+    listContainer.innerHTML = html;
+}
+
+function renderTagSelectorInForm(container, selectedTagIds = []) {
+    if (!container) return;
+    if (state.tags.length === 0) {
+        container.innerHTML = '<span class="text-muted" style="font-size:12px;">Chưa có thẻ nào. Hãy tạo thẻ trong mục Quản lý Thẻ.</span>';
+        return;
+    }
+    
+    let html = "";
+    state.tags.forEach(tag => {
+        const isChecked = selectedTagIds.includes(tag.id) ? "checked" : "";
+        html += `
+            <label class="tag-selector-item" style="background-color: ${tag.color}15; color: ${tag.color}; border: 1px solid ${tag.color}30; margin-right:4px;">
+                <input type="checkbox" value="${tag.id}" ${isChecked}>
+                <span>${tag.name}</span>
+            </label>
+        `;
+    });
+    container.innerHTML = html;
+}
 
 // --- START SYSTEM ---
 document.addEventListener("DOMContentLoaded", initApp);
