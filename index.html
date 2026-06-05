@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="auto">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ thống Quản lý Công việc - NOVASTARS</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-logo">
+                    <i class="fa-solid fa-star-and-crescent brand-icon"></i>
+                </div>
+                <div class="brand-name">
+                    <h2>NOVASTARS</h2>
+                    <span>Giáo dục & Công nghệ</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <a href="#" class="menu-item active" data-target="dashboard">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <span>Tổng quan</span>
+                </a>
+                <a href="#" class="menu-item" data-target="projects">
+                    <i class="fa-solid fa-folder-tree"></i>
+                    <span>Dự án</span>
+                </a>
+                <a href="#" class="menu-item" data-target="members">
+                    <i class="fa-solid fa-users"></i>
+                    <span>Nhân viên</span>
+                </a>
+                <a href="#" class="menu-item" data-target="assignment">
+                    <i class="fa-solid fa-share-nodes"></i>
+                    <span>Phân công việc</span>
+                </a>
+                <a href="#" class="menu-item" data-target="tasks">
+                    <i class="fa-solid fa-list-check"></i>
+                    <span>Công việc</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <p class="company-fullname">CÔNG TY CỔ PHẦN GIÁO DỤC NOVASTARS</p>
+                <div class="data-actions">
+                    <button id="btnExportData" class="btn-text-icon" title="Xuất dữ liệu lưu dự phòng">
+                        <i class="fa-solid fa-download"></i> Xuất dữ liệu
+                    </button>
+                    <button id="btnImportData" class="btn-text-icon" title="Nhập dữ liệu từ file JSON">
+                        <i class="fa-solid fa-upload"></i> Nhập dữ liệu
+                    </button>
+                    <input type="file" id="importFile" accept=".json" style="display: none;">
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN LAYOUT -->
+        <div class="main-layout">
+            <!-- HEADER -->
+            <header class="header">
+                <div class="header-left">
+                    <button class="menu-toggle" id="menuToggle" aria-label="Toggle Menu">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <h1 class="page-title" id="pageTitle">Tổng quan</h1>
+                </div>
+
+                <div class="header-right">
+                    <!-- Theme Settings -->
+                    <div class="theme-selector">
+                        <button class="theme-btn active" id="themeAuto" title="Theo thời gian hệ thống">
+                            <i class="fa-solid fa-clock"></i> Tự động
+                        </button>
+                        <button class="theme-btn" id="themeLight" title="Chế độ sáng">
+                            <i class="fa-solid fa-sun"></i> Sáng
+                        </button>
+                        <button class="theme-btn" id="themeDark" title="Chế độ tối">
+                            <i class="fa-solid fa-moon"></i> Tối
+                        </button>
+                    </div>
+
+                    <!-- Role Switcher -->
+                    <div class="role-switcher-container">
+                        <label for="roleSwitcher" class="role-label"><i class="fa-solid fa-user-shield"></i> Vai trò:</label>
+                        <select id="roleSwitcher" class="role-select">
+                            <option value="admin">Quản trị viên (Admin)</option>
+                            <!-- Các nhân viên khác sẽ được thêm động vào đây từ JS -->
+                        </select>
+                    </div>
+
+                    <!-- User Profile Quick View -->
+                    <div class="user-profile-badge">
+                        <div class="avatar" id="currentUserAvatar">AD</div>
+                        <div class="user-info">
+                            <span class="user-name" id="currentUserName">Admin</span>
+                            <span class="user-role" id="currentUserRole">Người giao việc</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- MAIN CONTENT PANELS -->
+            <main class="main-content">
+                <!-- 1. DASHBOARD VIEW -->
+                <section class="content-panel active" id="panel-dashboard">
+                    <!-- Statistics Grid -->
+                    <div class="stats-grid">
+                        <div class="stat-card urgent">
+                            <div class="stat-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                            <div class="stat-details">
+                                <span class="stat-title">Việc Cần Làm Gấp</span>
+                                <h3 class="stat-value" id="statUrgentTasks">0</h3>
+                            </div>
+                        </div>
+                        <div class="stat-card pending">
+                            <div class="stat-icon"><i class="fa-solid fa-spinner"></i></div>
+                            <div class="stat-details">
+                                <span class="stat-title">Đang thực hiện / Chờ duyệt</span>
+                                <h3 class="stat-value" id="statPendingTasks">0 / 0</h3>
+                            </div>
+                        </div>
+                        <div class="stat-card completed">
+                            <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
+                            <div class="stat-details">
+                                <span class="stat-title">Đã hoàn thành</span>
+                                <h3 class="stat-value" id="statCompletedTasks">0</h3>
+                            </div>
+                        </div>
+                        <div class="stat-card total">
+                            <div class="stat-icon"><i class="fa-solid fa-cubes"></i></div>
+                            <div class="stat-details">
+                                <span class="stat-title">Tổng số công việc</span>
+                                <h3 class="stat-value" id="statTotalTasks">0</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dashboard Layout Grid -->
+                    <div class="dashboard-grid">
+                        <!-- URGENT TASKS SECTION (MUST BE HIGH-PRIORITY AND ON TOP) -->
+                        <div class="grid-col main-col">
+                            <div class="card panel-card">
+                                <div class="card-header urgent-header">
+                                    <div class="header-title">
+                                        <i class="fa-solid fa-bolt text-gold animate-pulse"></i>
+                                        <h3>DANH SÁCH VIỆC GẤP & QUAN TRỌNG</h3>
+                                    </div>
+                                    <span class="badge badge-danger" id="urgentCountBadge">0 việc</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="urgent-task-list" id="dashboardUrgentTasksList">
+                                        <!-- Javascript sẽ hiển thị việc gấp chưa hoàn thành lên đây -->
+                                        <div class="empty-state">
+                                            <i class="fa-solid fa-circle-check text-success"></i>
+                                            <p>Tuyệt vời! Không có công việc gấp nào chưa hoàn thành.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PROJECT OVERVIEW AND QUICK INFO -->
+                        <div class="grid-col side-col">
+                            <div class="card panel-card">
+                                <div class="card-header">
+                                    <div class="header-title">
+                                        <i class="fa-solid fa-folder-open"></i>
+                                        <h3>Tiến độ Dự án</h3>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="project-progress-list" id="dashboardProjectList">
+                                        <!-- Danh sách dự án và thanh phần trăm tiến độ -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. PROJECTS VIEW -->
+                <section class="content-panel" id="panel-projects">
+                    <div class="action-bar">
+                        <div class="search-bar">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="projectSearch" placeholder="Tìm kiếm dự án...">
+                        </div>
+                        <button class="btn btn-primary btn-admin-only" id="btnNewProject">
+                            <i class="fa-solid fa-plus"></i> Tạo dự án mới
+                        </button>
+                    </div>
+
+                    <div class="project-grid" id="projectList">
+                        <!-- Thẻ dự án hiển thị động ở đây -->
+                    </div>
+                </section>
+
+                <!-- 3. MEMBERS VIEW -->
+                <section class="content-panel" id="panel-members">
+                    <div class="action-bar">
+                        <div class="search-bar">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="memberSearch" placeholder="Tìm kiếm nhân viên...">
+                        </div>
+                        <button class="btn btn-primary btn-admin-only" id="btnNewMember">
+                            <i class="fa-solid fa-user-plus"></i> Thêm nhân viên mới
+                        </button>
+                    </div>
+
+                    <div class="member-grid" id="memberList">
+                        <!-- Thẻ nhân viên hiển thị động ở đây -->
+                    </div>
+                </section>
+
+                <!-- 5. ASSIGNMENT VIEW -->
+                <section class="content-panel" id="panel-assignment">
+                    <div class="action-bar">
+                        <div class="search-bar">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="assignmentSearch" placeholder="Tìm kiếm việc trong bảng...">
+                        </div>
+                        <button class="btn btn-primary btn-admin-only" id="btnAssignmentNewTask">
+                            <i class="fa-solid fa-plus"></i> Giao việc mới
+                        </button>
+                    </div>
+                    
+                    <div class="assignment-board" id="assignmentBoard">
+                        <!-- Cột phân việc theo từng nhân viên sẽ kết xuất động bằng JS -->
+                    </div>
+                </section>
+
+                <!-- 4. TASKS VIEW -->
+                <section class="content-panel" id="panel-tasks">
+                    <!-- Filters & Create Actions -->
+                    <div class="task-filters-bar">
+                        <div class="filter-group-row">
+                            <div class="search-bar">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input type="text" id="taskSearch" placeholder="Tìm kiếm công việc...">
+                            </div>
+                            <div class="filter-select-wrapper">
+                                <select id="filterProject" class="filter-select">
+                                    <option value="all">Tất cả Dự án</option>
+                                    <!-- Dự án được điền tự động -->
+                                </select>
+                            </div>
+                            <div class="filter-select-wrapper">
+                                <select id="filterMember" class="filter-select">
+                                    <option value="all">Tất cả Nhân viên</option>
+                                    <!-- Nhân viên được điền tự động -->
+                                </select>
+                            </div>
+                            <div class="filter-select-wrapper">
+                                <select id="filterStatus" class="filter-select">
+                                    <option value="all">Tất cả Trạng thái</option>
+                                    <option value="new">Mới giao</option>
+                                    <option value="working">Đang làm</option>
+                                    <option value="reviewing">Chờ duyệt</option>
+                                    <option value="completed">Đã hoàn thành</option>
+                                </select>
+                            </div>
+                            <div class="filter-select-wrapper">
+                                <select id="filterUrgent" class="filter-select">
+                                    <option value="all">Tất cả Độ ưu tiên</option>
+                                    <option value="urgent">Cần gấp</option>
+                                    <option value="normal">Bình thường</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary btn-admin-only" id="btnNewTask">
+                            <i class="fa-solid fa-plus"></i> Giao việc mới
+                        </button>
+                    </div>
+
+                    <div class="task-sorting-info">
+                        <i class="fa-solid fa-circle-info text-primary"></i>
+                        <span>Công việc được sắp xếp ưu tiên: <strong>Việc Cần Gấp Chưa Xong (Hạn gần nhất lên trước)</strong> &rarr; Việc Bình Thường Chưa Xong &rarr; Việc Đã Xong.</span>
+                    </div>
+
+                    <!-- Tasks Display Grid -->
+                    <div class="task-container" id="taskList">
+                        <!-- Danh sách công việc động -->
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- ==================== MODALS ==================== -->
+    
+    <!-- 1. MODAL: DỰ ÁN MỚI (Admin) -->
+    <div class="modal" id="modalProject">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="projectModalTitle">Tạo Dự án Mới</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="projectForm">
+                <input type="hidden" id="projectId">
+                <div class="form-group">
+                    <label for="projectName" class="required-label">Tên dự án</label>
+                    <input type="text" id="projectName" required placeholder="Ví dụ: Thiết kế Giáo trình Lập trình Scratch">
+                </div>
+                <div class="form-group">
+                    <label for="projectDesc">Mô tả dự án</label>
+                    <textarea id="projectDesc" rows="3" placeholder="Mô tả mục tiêu, yêu cầu của dự án..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="projectStatus">Trạng thái</label>
+                    <select id="projectStatus">
+                        <option value="active">Đang triển khai</option>
+                        <option value="completed">Đã hoàn thành</option>
+                        <option value="on-hold">Tạm dừng</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary modal-close">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Lưu dự án</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. MODAL: NHÂN VIÊN MỚI (Admin) -->
+    <div class="modal" id="modalMember">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="memberModalTitle">Thêm Nhân viên Mới</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="memberForm">
+                <input type="hidden" id="memberId">
+                <div class="form-group">
+                    <label for="memberName" class="required-label">Họ và tên</label>
+                    <input type="text" id="memberName" required placeholder="Ví dụ: Nguyễn Văn A">
+                </div>
+                <div class="form-group">
+                    <label for="memberRole" class="required-label">Chức vụ / Vị trí</label>
+                    <input type="text" id="memberRole" required placeholder="Ví dụ: Giáo viên Lập trình, Thiết kế Đồ họa">
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-6">
+                        <label for="memberEmail">Địa chỉ Email</label>
+                        <input type="text" id="memberEmail" placeholder="Ví dụ: a.nguyen@novastars.edu.vn">
+                    </div>
+                    <div class="form-group col-6">
+                        <label for="memberPhone">Số điện thoại</label>
+                        <input type="text" id="memberPhone" placeholder="Ví dụ: 0912345678">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="memberColor">Màu đại diện</label>
+                    <input type="color" id="memberColor" value="#3f51b5">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary modal-close">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Lưu nhân viên</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 3. MODAL: CÔNG VIỆC MỚI (Admin) -->
+    <div class="modal" id="modalTask">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="taskModalTitle">Giao Công việc Mới</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="taskForm">
+                <input type="hidden" id="taskId">
+                <div class="form-group">
+                    <label for="taskTitle" class="required-label">Tiêu đề công việc</label>
+                    <input type="text" id="taskTitle" required placeholder="Ví dụ: Soạn thảo slides bài 1 Python">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group col-6">
+                        <label for="taskProject" class="required-label">Dự án</label>
+                        <select id="taskProject" required>
+                            <option value="">-- Chọn dự án --</option>
+                            <!-- Điền tự động -->
+                        </select>
+                    </div>
+                    <div class="form-group col-6">
+                        <label for="taskAssignee" class="required-label">Người thực hiện</label>
+                        <select id="taskAssignee" required>
+                            <option value="">-- Chọn nhân viên --</option>
+                            <!-- Điền tự động -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-6">
+                        <label for="taskDueDate" class="required-label">Hạn hoàn thành (Deadline)</label>
+                        <input type="date" id="taskDueDate" required>
+                    </div>
+                    <div class="form-group col-6 flex-align-center">
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" id="taskIsUrgent">
+                            <label for="taskIsUrgent" class="label-urgent">
+                                <i class="fa-solid fa-triangle-exclamation text-gold animate-bounce"></i> 
+                                Cần gấp / Việc quan trọng
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="taskDesc">Mô tả chi tiết công việc</label>
+                    <textarea id="taskDesc" rows="4" placeholder="Mô tả các yêu cầu cần đạt được của công việc..."></textarea>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary modal-close">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Giao việc</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 4. MODAL: CẬP NHẬT TIẾN ĐỘ & NỘP BÀI (Nhân viên / Admin xem) -->
+    <div class="modal" id="modalTaskProgress">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Chi tiết Công việc & Cập nhật</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body-detail">
+                <!-- Task general info -->
+                <div class="task-detail-header">
+                    <span id="detailUrgentBadge" class="badge">Cần gấp</span>
+                    <h2 id="detailTitle">Tên công việc ở đây</h2>
+                    <p id="detailProject"><i class="fa-solid fa-folder"></i> Dự án: <span>...</span></p>
+                </div>
+
+                <div class="task-detail-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">Người phụ trách</span>
+                        <div class="detail-value flex-align-center gap-2">
+                            <div class="avatar avatar-sm" id="detailAssigneeAvatar">NV</div>
+                            <span id="detailAssigneeName">Nhân viên</span>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Hạn hoàn thành (Deadline)</span>
+                        <span class="detail-value text-danger" id="detailDueDate"><i class="fa-regular fa-calendar-days"></i> --/--/----</span>
+                    </div>
+                </div>
+
+                <div class="detail-item mt-3">
+                    <span class="detail-label">Mô tả công việc</span>
+                    <div class="detail-desc-box" id="detailDesc">Không có mô tả chi tiết.</div>
+                </div>
+
+                <hr class="modal-divider">
+
+                <!-- Dynamic Section based on role and status -->
+                <div class="task-action-section">
+                    <!-- TRẠNG THÁI HIỆN TẠI -->
+                    <div class="detail-item mb-3">
+                        <span class="detail-label">Trạng thái hiện tại</span>
+                        <span id="detailStatusBadge" class="badge">Mới giao</span>
+                    </div>
+
+                    <!-- KHU VỰC CỦA NHÂN VIÊN: CẬP NHẬT VÀ NỘP FILE -->
+                    <div id="employeeActionArea" class="action-card">
+                        <h4><i class="fa-solid fa-pen-to-square"></i> Cập nhật tiến độ của bạn</h4>
+                        <div class="form-group mt-2">
+                            <label for="employeeStatusSelect">Đổi trạng thái:</label>
+                            <select id="employeeStatusSelect" class="form-control-styled">
+                                <option value="new">Mới giao</option>
+                                <option value="working">Đang làm (Đang thực hiện)</option>
+                                <option value="reviewing">Chờ duyệt (Đã làm xong, đợi Admin duyệt)</option>
+                            </select>
+                        </div>
+
+                        <!-- Upload File (Show only when status is reviewing) -->
+                        <div class="form-group mt-3" id="fileUploadContainer" style="display: none;">
+                            <label class="required-label"><i class="fa-solid fa-paperclip"></i> Đính kèm tệp hoàn thành công việc (Dưới 2MB)</label>
+                            <div class="file-dropzone" id="fileDropzone">
+                                <i class="fa-solid fa-cloud-arrow-up dropzone-icon"></i>
+                                <p>Kéo thả tệp vào đây hoặc click để chọn tệp</p>
+                                <span class="file-size-limit">Hỗ trợ các định dạng tài liệu, hình ảnh, zip... Tối đa 2MB</span>
+                                <input type="file" id="taskFileAttachment" style="display: none;">
+                            </div>
+                            <div class="attached-file-info" id="attachedFileInfo" style="display:none;">
+                                <i class="fa-regular fa-file-lines file-icon"></i>
+                                <div class="file-meta">
+                                    <span class="file-name" id="attachedFileName">ten-file.pdf</span>
+                                    <span class="file-size" id="attachedFileSize">150 KB</span>
+                                </div>
+                                <button type="button" class="btn-remove-file" id="btnRemoveFile" title="Hủy tệp này">&times;</button>
+                            </div>
+                        </div>
+
+                        <div class="mt-3 text-right">
+                            <button type="button" class="btn btn-primary" id="btnSaveProgress">Cập nhật</button>
+                        </div>
+                    </div>
+
+                    <!-- KHU VỰC CỦA ADMIN: DUYỆT CÔNG VIỆC VÀ TẢI TỆP NỘP -->
+                    <div id="adminActionArea" class="action-card" style="display: none;">
+                        <h4><i class="fa-solid fa-shield-halved"></i> Khu vực của Quản trị viên</h4>
+                        
+                        <!-- File submitted by employee -->
+                        <div class="submitted-file-box mt-2" id="submittedFileBox" style="display: none;">
+                            <span class="detail-label"><i class="fa-solid fa-file-signature"></i> Tệp kết quả nhân viên đã nộp:</span>
+                            <div class="attached-file-info show-download mt-1">
+                                <i class="fa-solid fa-file-arrow-down file-icon text-primary animate-bounce"></i>
+                                <div class="file-meta">
+                                    <span class="file-name" id="submittedFileName">bao-cao-hoan-thanh.zip</span>
+                                    <span class="file-size" id="submittedFileSize">1.2 MB</span>
+                                </div>
+                                <button type="button" class="btn btn-success btn-sm" id="btnDownloadFile">
+                                    <i class="fa-solid fa-download"></i> Tải về
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Review actions (Accept / Reject) -->
+                        <div class="review-actions mt-3" id="adminReviewActions" style="display: none;">
+                            <p class="review-instruction">Nhân viên đã gửi yêu cầu duyệt công việc này. Bạn có đồng ý phê duyệt?</p>
+                            <div class="flex-align-center gap-2 mt-2">
+                                <button type="button" class="btn btn-success flex-grow-1" id="btnApproveTask">
+                                    <i class="fa-solid fa-check"></i> Duyệt Hoàn Thành
+                                </button>
+                                <button type="button" class="btn btn-danger flex-grow-1" id="btnRejectTask">
+                                    <i class="fa-solid fa-rotate-left"></i> Yêu cầu làm lại
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="admin-standard-status mt-3" id="adminStandardStatus" style="display: none;">
+                            <label for="adminStatusSelect">Thay đổi trạng thái trực tiếp:</label>
+                            <select id="adminStatusSelect" class="form-control-styled">
+                                <option value="new">Mới giao</option>
+                                <option value="working">Đang làm</option>
+                                <option value="reviewing">Chờ duyệt</option>
+                                <option value="completed">Đã hoàn thành</option>
+                            </select>
+                            <div class="mt-2 text-right">
+                                <button type="button" class="btn btn-primary btn-sm" id="btnAdminSaveStatus">Lưu trạng thái</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Custom JS -->
+    <script src="app.js"></script>
+</body>
+</html>
