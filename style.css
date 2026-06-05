@@ -2268,3 +2268,56 @@ input[type="color"] {
     padding-top: 12px;
     border-top: 1px solid var(--border-color);
 }
+
+/* --- CLOUD SYNC STATUS INDICATOR --- */
+.sync-status-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-full);
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sync-status-indicator:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--border-color-hover);
+    transform: scale(1.05);
+}
+
+.sync-status-indicator.syncing {
+    color: var(--color-primary);
+    border-color: var(--color-primary-light);
+    background-color: rgba(99, 102, 241, 0.05);
+}
+
+.sync-status-indicator.synced {
+    color: var(--color-success);
+    border-color: rgba(16, 185, 129, 0.3);
+    background-color: rgba(16, 185, 129, 0.05);
+}
+
+.sync-status-indicator.sync-error {
+    color: var(--color-danger);
+    border-color: rgba(239, 68, 68, 0.3);
+    background-color: rgba(239, 68, 68, 0.05);
+}
+
+.sync-status-indicator.syncing i {
+    animation: local-fa-spin 1.5s linear infinite;
+}
+
+@keyframes local-fa-spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+

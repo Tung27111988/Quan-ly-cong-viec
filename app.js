@@ -100,6 +100,20 @@ const INITIAL_ACCOUNTS = [
     { id: "acc-4", username: "nam.th", password: "123", fullName: "Trần Hoàng Nam", role: "employee" }
 ];
 
+// --- CLOUD SYNC CONFIGURATION ---
+const CLOUD_BUCKET = "E8vHacB3rUMdEr7RcYHuNT";
+const IS_LOCAL_SERVER = window.location.protocol !== 'file:' && 
+    !window.location.hostname.toLowerCase().endsWith('vercel.app') &&
+    !window.location.hostname.toLowerCase().endsWith('github.io');
+const CLOUD_URL = IS_LOCAL_SERVER ? '/api/data' : `https://kvdb.io/${CLOUD_BUCKET}/novastars_data`;
+
+// Keep track of sync state
+let syncState = {
+    status: "idle", // "idle" | "syncing" | "synced" | "error"
+    lastSyncTime: 0,
+    saveTimeout: null
+};
+
 // --- APP STATE ---
 let state = {
     projects: [],
@@ -112,7 +126,8 @@ let state = {
     themeMode: "auto",   // "light", "dark", "auto"
     activePanel: "dashboard",
     projectLayout: "grid", // "grid" | "table"
-    projectColumnsVisibility: { dept: true, status: true, progress: true, tags: true }
+    projectColumnsVisibility: { dept: true, status: true, progress: true, tags: true },
+    lastUpdated: 0
 };
 
 // --- DOM ELEMENTS ---
@@ -290,6 +305,9 @@ const elements = {
     tagForm: document.getElementById("tagForm"),
     filterProjDetailTaskStatus: document.getElementById("filterProjDetailTaskStatus"),
 
+    syncStatusIndicator: document.getElementById("syncStatusIndicator"),
+    syncIcon: document.getElementById("syncIcon"),
+
     toastContainer: document.getElementById("toastContainer")
 };
 
@@ -360,6 +378,7 @@ function initApp() {
 
     state.themeMode = localStorage.getItem("novastars_theme_mode") || "auto";
     state.projectLayout = localStorage.getItem("novastars_project_layout") || "grid";
+    state.lastUpdated = parseInt(localStorage.getItem("novastars_last_updated")) || 0;
     
     try {
         state.projectColumnsVisibility = JSON.parse(localStorage.getItem("novastars_project_cols_visibility"));
@@ -379,7 +398,7 @@ function initApp() {
         syncUserRoleCompat();
     }
     
-    saveToLocalStorage();
+    saveToLocalStorageOnly();
 
     // 2. Set up Theme Mode
     applyTheme();
@@ -393,6 +412,33 @@ function initApp() {
     // 4. Register Event Listeners
     setupEventHandlers();
     
+    // Show warning banner if running on file:/// protocol (sandbox restricts fetches)
+    if (window.location.protocol === 'file:') {
+        const warningBanner = document.createElement("div");
+        warningBanner.style.backgroundColor = "rgba(239, 68, 68, 0.1)";
+        warningBanner.style.color = "var(--color-danger)";
+        warningBanner.style.border = "1px solid rgba(239, 68, 68, 0.2)";
+        warningBanner.style.padding = "10px 14px";
+        warningBanner.style.borderRadius = "var(--radius-md)";
+        warningBanner.style.marginBottom = "16px";
+        warningBanner.style.fontSize = "12px";
+        warningBanner.style.fontWeight = "600";
+        warningBanner.style.textAlign = "left";
+        warningBanner.style.lineHeight = "1.5";
+        warningBanner.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> <strong>Lưu ý quan trọng:</strong> Bạn đang mở file trực tiếp (file:///). Trình duyệt sẽ chặn kết nối đồng bộ. Vui lòng truy cập qua đường dẫn Vercel của bạn (ví dụ: https://quanlycongviec-three.vercel.app) hoặc dùng máy chủ nội bộ: <a href="http://localhost:3000" style="color:var(--color-primary); text-decoration:underline; margin-left:2px;">http://localhost:3000</a>`;
+        
+        if (elements.loginOverlay) {
+            const loginCard = elements.loginOverlay.querySelector(".login-card");
+            if (loginCard) {
+                loginCard.insertBefore(warningBanner, loginCard.firstChild);
+            }
+        }
+        
+        setTimeout(() => {
+            showToast("⚠️ Trình duyệt chặn đồng bộ khi mở file trực tiếp. Hãy dùng http://localhost:3000", "danger");
+        }, 1500);
+    }
+    
     // 5. Initial Render
     if (state.currentUser) {
         renderAll();
@@ -404,6 +450,14 @@ function initApp() {
             applyTheme();
         }
     }, 60000);
+
+    // 7. Setup Background Cloud Sync (every 15 seconds)
+    setInterval(() => {
+        syncFromCloud();
+    }, 15000);
+    
+    // Trigger initial sync from cloud immediately
+    syncFromCloud();
 }
 
 function syncUserRoleCompat() {
@@ -416,7 +470,150 @@ function syncUserRoleCompat() {
     }
 }
 
-function saveToLocalStorage() {
+// --- CLOUD SYNC LOGIC ---
+
+function updateSyncUI(status) {
+    if (!elements.syncStatusIndicator || !elements.syncIcon) return;
+    
+    syncState.status = status;
+    elements.syncStatusIndicator.className = "sync-status-indicator";
+    elements.syncIcon.className = "fa-solid";
+    
+    const targetName = IS_LOCAL_SERVER ? "máy chủ nội bộ" : "đám mây";
+    
+    if (status === "syncing") {
+        elements.syncStatusIndicator.classList.add("syncing");
+        elements.syncIcon.classList.add("fa-cloud-arrow-up");
+        elements.syncStatusIndicator.title = `Đang đồng bộ dữ liệu với ${targetName}...`;
+    } else if (status === "synced") {
+        elements.syncStatusIndicator.classList.add("synced");
+        elements.syncIcon.classList.add("fa-cloud");
+        const timeStr = new Date().toLocaleTimeString();
+        elements.syncStatusIndicator.title = `Đồng bộ thành công với ${targetName} lúc ${timeStr}. Click để đồng bộ lại.`;
+    } else if (status === "error") {
+        elements.syncStatusIndicator.classList.add("sync-error");
+        elements.syncIcon.classList.add("fa-cloud-slash");
+        elements.syncStatusIndicator.title = `Lỗi đồng bộ với ${targetName}! Click để thử lại.`;
+    } else {
+        elements.syncIcon.classList.add("fa-cloud");
+        elements.syncStatusIndicator.title = "Chưa đồng bộ. Click để đồng bộ ngay.";
+    }
+}
+
+async function saveToCloud() {
+    try {
+        updateSyncUI("syncing");
+        const payload = {
+            projects: state.projects,
+            members: state.members,
+            tasks: state.tasks,
+            tags: state.tags,
+            accounts: state.accounts,
+            lastUpdated: state.lastUpdated || Date.now()
+        };
+        
+        const response = await fetch(CLOUD_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        if (response.ok) {
+            updateSyncUI("synced");
+            syncState.lastSyncTime = Date.now();
+        } else {
+            console.error("Sync save failed:", response.statusText);
+            updateSyncUI("error");
+        }
+    } catch (err) {
+        console.error("Sync save error:", err);
+        updateSyncUI("error");
+    }
+}
+
+async function syncFromCloud(force = false) {
+    try {
+        updateSyncUI("syncing");
+        const response = await fetch(CLOUD_URL);
+        if (response.status === 404) {
+            console.log("No data on server yet, seeding server with local data...");
+            await saveToCloud();
+            return;
+        }
+        
+        if (!response.ok) {
+            updateSyncUI("error");
+            return;
+        }
+        
+        const text = await response.text();
+        if (!text) {
+            updateSyncUI("synced");
+            return;
+        }
+        
+        const cloudData = JSON.parse(text);
+        if (!cloudData || typeof cloudData !== "object") {
+            updateSyncUI("error");
+            return;
+        }
+        
+        const cloudLastUpdated = cloudData.lastUpdated || 0;
+        const localLastUpdated = state.lastUpdated || 0;
+        
+        if (cloudLastUpdated > localLastUpdated || force) {
+            console.log("Server data is newer or sync is forced. Updating state...", { cloudLastUpdated, localLastUpdated });
+            
+            if (Array.isArray(cloudData.projects)) state.projects = cloudData.projects;
+            if (Array.isArray(cloudData.members)) state.members = cloudData.members;
+            if (Array.isArray(cloudData.tasks)) state.tasks = cloudData.tasks;
+            if (Array.isArray(cloudData.tags)) state.tags = cloudData.tags;
+            if (Array.isArray(cloudData.accounts)) state.accounts = cloudData.accounts;
+            if (cloudLastUpdated) state.lastUpdated = cloudLastUpdated;
+            
+            saveToLocalStorageOnly();
+            
+            // Re-render and populate UI
+            populateRoleSwitcher();
+            elements.roleSwitcher.value = state.currentRole;
+            updateCurrentUserProfile();
+            
+            if (state.currentUser) {
+                const updatedUser = state.accounts.find(acc => acc.id === state.currentUser.id);
+                if (updatedUser) {
+                    state.currentUser = updatedUser;
+                } else if (state.currentUser.username.toLowerCase() !== "admin") {
+                    handleLogout();
+                }
+            }
+            
+            if (state.currentUser) {
+                renderAll();
+                renderAccounts();
+            }
+        }
+        
+        updateSyncUI("synced");
+        syncState.lastSyncTime = Date.now();
+    } catch (err) {
+        console.error("Server sync error:", err);
+        updateSyncUI("error");
+    }
+}
+
+function triggerCloudSave() {
+    updateSyncUI("syncing");
+    if (syncState.saveTimeout) {
+        clearTimeout(syncState.saveTimeout);
+    }
+    syncState.saveTimeout = setTimeout(async () => {
+        await saveToCloud();
+    }, 1500);
+}
+
+function saveToLocalStorageOnly() {
     localStorage.setItem("novastars_projects", JSON.stringify(state.projects));
     localStorage.setItem("novastars_members", JSON.stringify(state.members));
     localStorage.setItem("novastars_tasks", JSON.stringify(state.tasks));
@@ -427,6 +624,13 @@ function saveToLocalStorage() {
     localStorage.setItem("novastars_current_role", state.currentRole);
     localStorage.setItem("novastars_project_layout", state.projectLayout);
     localStorage.setItem("novastars_project_cols_visibility", JSON.stringify(state.projectColumnsVisibility));
+    localStorage.setItem("novastars_last_updated", state.lastUpdated || 0);
+}
+
+function saveToLocalStorage() {
+    state.lastUpdated = Date.now();
+    saveToLocalStorageOnly();
+    triggerCloudSave();
 }
 
 // --- CORE FUNCTIONS: TOAST NOTIFICATIONS ---
@@ -1176,6 +1380,13 @@ function setupEventHandlers() {
         saveToLocalStorage();
         showToast("Đã kích hoạt chế độ giao diện tối.", "success");
     });
+
+    // Cloud Sync status click trigger
+    if (elements.syncStatusIndicator) {
+        elements.syncStatusIndicator.addEventListener("click", () => {
+            syncFromCloud(true);
+        });
+    }
 
     // 4. Role Switcher
     elements.roleSwitcher.addEventListener("change", (e) => {
@@ -2403,7 +2614,7 @@ function renderTagSelectorInForm(container, selectedTagIds = []) {
 
 // --- ACCOUNT & LOGIN MANAGEMENT LOGIC ---
 
-function handleLogin(e) {
+async function handleLogin(e) {
     e.preventDefault();
     const username = elements.loginUsername.value.trim().toLowerCase();
     const password = elements.loginPassword.value;
@@ -2413,7 +2624,19 @@ function handleLogin(e) {
         return;
     }
     
-    const account = state.accounts.find(acc => acc.username.toLowerCase() === username && acc.password === password);
+    let account = state.accounts.find(acc => acc.username.toLowerCase() === username && acc.password === password);
+    if (!account) {
+        // If not found locally, fetch latest accounts from the cloud
+        showToast("Đang kiểm tra tài khoản từ hệ thống đám mây...", "info");
+        try {
+            await syncFromCloud(true); // Force sync from cloud immediately
+            // Re-check
+            account = state.accounts.find(acc => acc.username.toLowerCase() === username && acc.password === password);
+        } catch (err) {
+            console.error("Cloud sync failed during login check:", err);
+        }
+    }
+    
     if (!account) {
         showToast("Tên đăng nhập hoặc mật khẩu không chính xác.", "danger");
         return;
