@@ -92,7 +92,7 @@ const INITIAL_TASKS = [
 
 // --- INITIAL SEED ACCOUNTS ---
 const INITIAL_ACCOUNTS = [
-    { id: "acc-1", username: "admin", password: "admin", fullName: "Quản trị viên hệ thống", role: "admin" },
+    { id: "acc-1", username: "admin", password: "123456", fullName: "Quản trị viên hệ thống", role: "admin" },
     { id: "acc-2", username: "tri.pm", password: "123", fullName: "Phan Minh Trí", role: "admin" },
     { id: "acc-3", username: "ha.ltt", password: "123", fullName: "Lê Thị Thu Hà", role: "employee" },
     { id: "acc-4", username: "nam.th", password: "123", fullName: "Trần Hoàng Nam", role: "employee" }
@@ -293,6 +293,13 @@ function initApp() {
     state.tasks = JSON.parse(localStorage.getItem("novastars_tasks")) || INITIAL_TASKS;
     state.tags = JSON.parse(localStorage.getItem("novastars_tags")) || INITIAL_TAGS;
     state.accounts = JSON.parse(localStorage.getItem("novastars_accounts")) || INITIAL_ACCOUNTS;
+    
+    // Automatically update admin's default password to '123456' if it is still set to 'admin'
+    const adminAcc = state.accounts.find(acc => acc.username === "admin");
+    if (adminAcc && adminAcc.password === "admin") {
+        adminAcc.password = "123456";
+    }
+    
     state.currentUser = JSON.parse(localStorage.getItem("novastars_current_user")) || null;
     state.themeMode = localStorage.getItem("novastars_theme_mode") || "auto";
     state.projectLayout = localStorage.getItem("novastars_project_layout") || "grid";
