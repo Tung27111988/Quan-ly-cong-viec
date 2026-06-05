@@ -2,6 +2,8 @@
    NOVASTARS TASK MANAGEMENT SYSTEM - CORE LOGIC
    ========================================================================== */
 
+console.log("NOVASTARS Task Manager loaded - Version 2.0.2");
+
 // --- INITIAL SEED DATA ---
 const INITIAL_TAGS = [
     { id: "tag-1", name: "Gấp rút", color: "#ef4444" },
