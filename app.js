@@ -294,13 +294,18 @@ function initApp() {
     state.tags = JSON.parse(localStorage.getItem("novastars_tags")) || INITIAL_TAGS;
     state.accounts = JSON.parse(localStorage.getItem("novastars_accounts")) || INITIAL_ACCOUNTS;
     
-    // Automatically update admin's default password to '123456' if it is still set to 'admin'
-    const adminAcc = state.accounts.find(acc => acc.username === "admin");
-    if (adminAcc && adminAcc.password === "admin") {
+    // Force reset admin's default password to '123456' to ensure it is always accessible
+    const adminAcc = state.accounts.find(acc => acc.username.toLowerCase() === "admin");
+    if (adminAcc) {
         adminAcc.password = "123456";
+    } else {
+        state.accounts.push({ id: "acc-1", username: "admin", password: "123456", fullName: "Quản trị viên hệ thống", role: "admin" });
     }
     
     state.currentUser = JSON.parse(localStorage.getItem("novastars_current_user")) || null;
+    if (state.currentUser && state.currentUser.username.toLowerCase() === "admin") {
+        state.currentUser.password = "123456";
+    }
     state.themeMode = localStorage.getItem("novastars_theme_mode") || "auto";
     state.projectLayout = localStorage.getItem("novastars_project_layout") || "grid";
     state.projectColumnsVisibility = JSON.parse(localStorage.getItem("novastars_project_cols_visibility")) || { dept: true, status: true, progress: true, tags: true };
