@@ -1903,8 +1903,16 @@ function renderMemberLane(memberId, member, memberTasks, searchVal, isAdmin) {
         return t.title.toLowerCase().includes(searchVal) || (t.desc && t.desc.toLowerCase().includes(searchVal));
     });
     
-    // Sắp xếp công việc (Việc gấp lên trên)
-    const sortedTasks = sortTasks(filteredTasks);
+    // Sắp xếp công việc (Công việc mới nhất lên đầu)
+    const sortedTasks = [...filteredTasks].sort((a, b) => {
+        const aTime = a.id.startsWith("task-") ? parseInt(a.id.replace("task-", "")) : 0;
+        const bTime = b.id.startsWith("task-") ? parseInt(b.id.replace("task-", "")) : 0;
+        
+        if (!isNaN(aTime) && !isNaN(bTime) && aTime > 10000 && bTime > 10000) {
+            return bTime - aTime;
+        }
+        return b.id.localeCompare(a.id);
+    });
     
     // Đếm số việc đang thực hiện (chưa xong)
     const activeCount = memberTasks.filter(t => t.status !== "completed").length;
