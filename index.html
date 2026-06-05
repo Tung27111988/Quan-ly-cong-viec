@@ -4,6 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hệ thống Quản lý Công việc - NOVASTARS</title>
+    <!-- Diagnostic Error Catcher -->
+    <script>
+        window.onerror = function(message, source, lineno, colno, error) {
+            var msg = "⚠️ LỖI SCRIPT HỆ THỐNG:\n\n" + 
+                      "Thông báo: " + message + "\n" + 
+                      "Nguồn: " + source + "\n" + 
+                      "Dòng: " + lineno + " | Cột: " + colno;
+            alert(msg);
+            console.error(msg, error);
+            return false;
+        };
+    </script>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -802,7 +814,7 @@
                 <i class="fa-solid fa-star-and-crescent login-icon"></i>
                 <h2>NOVASTARS</h2>
                 <span>Hệ thống Quản lý Công việc</span>
-                <span class="version-badge" style="display: inline-block; font-size: 10px; color: var(--color-primary); background: rgba(99, 102, 241, 0.1); padding: 2px 8px; border-radius: 10px; margin-top: 6px; font-weight: 600; width: fit-content;">v2.0.2</span>
+                <span class="version-badge" style="display: inline-block; font-size: 10px; color: var(--color-primary); background: rgba(99, 102, 241, 0.1); padding: 2px 8px; border-radius: 10px; margin-top: 6px; font-weight: 600; width: fit-content;">v2.0.3</span>
             </div>
             <form id="loginForm" style="padding: 0;">
                 <div class="form-group">
@@ -824,6 +836,6 @@
     </div>
 
     <!-- Custom JS -->
-    <script src="app.js?v=2.0.2"></script>
+    <script src="app.js?v=2.0.3"></script>
 </body>
 </html>

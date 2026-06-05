@@ -2,7 +2,7 @@
    NOVASTARS TASK MANAGEMENT SYSTEM - CORE LOGIC
    ========================================================================== */
 
-console.log("NOVASTARS Task Manager loaded - Version 2.0.2");
+console.log("NOVASTARS Task Manager loaded - Version 2.0.3");
 
 // --- INITIAL SEED DATA ---
 const INITIAL_TAGS = [
