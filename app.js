@@ -2,7 +2,7 @@
    NOVASTARS TASK MANAGEMENT SYSTEM - CORE LOGIC
    ========================================================================== */
 
-console.log("NOVASTARS Task Manager loaded - Version 2.0.3");
+console.log("NOVASTARS Task Manager loaded - Version 2.0.4");
 
 // --- INITIAL SEED DATA ---
 const INITIAL_TAGS = [
@@ -283,6 +283,12 @@ const elements = {
     accountFullName: document.getElementById("accountFullName"),
     accountRole: document.getElementById("accountRole"),
     accountModalTitle: document.getElementById("accountModalTitle"),
+    // Tag Management Elements
+    tagSearch: document.getElementById("tagSearch"),
+    btnNewTag: document.getElementById("btnNewTag"),
+    tagList: document.getElementById("tagList"),
+    tagForm: document.getElementById("tagForm"),
+    filterProjDetailTaskStatus: document.getElementById("filterProjDetailTaskStatus"),
 
     toastContainer: document.getElementById("toastContainer")
 };
